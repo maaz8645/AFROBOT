@@ -61,6 +61,16 @@
       transform: scale(1);
       transition: opacity 0.22s ease, transform 0.22s ease;
     }
+	
+#home-screen,
+#achievements-screen,
+#settings-screen,
+#controls-screen,
+#mode-screen {
+  background:
+    linear-gradient(rgba(13, 10, 26, 0.55), rgba(13, 10, 26, 0.55)),
+    url('homescreen-bg.png') center center / cover no-repeat;
+}
 
     .overlay.fade-out,
     .overlay.fade-in-start {
@@ -311,7 +321,6 @@
       background-color: #226b33;
     }
   </style>
-  </style>
 </head>
 <body>
 
@@ -324,11 +333,6 @@
       <button id="start-btn" class="btn">START GAME</button>
       <button id="achievements-btn" class="btn" style="margin-top: 20px; background-color: #6b5b1a;">ACHIEVEMENTS</button>
       <button id="settings-btn" class="btn" style="margin-top: 20px; background-color: #555555;">SETTINGS</button>
-      <div class="controls-hint">
-        <strong>Movement:</strong> A/D or Arrows | Space = Jump & Double Jump<br>
-        <strong>Shoot:</strong> J / Hold J for Charge Shot<br>
-        <strong>Dash:</strong> Hold SHIFT + A/D or Left/Right
-      </div>
     </div>
 
         <!-- Achievements Screen -->
@@ -368,7 +372,7 @@
 </div>
 </div>
 
-    <!-- Settings Screen -->
+     <!-- Settings Screen -->
     <div id="settings-screen" class="overlay hidden">
       <h1 class="title-red" style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 30px;">SETTINGS</h1>
       <div class="settings-box">
@@ -391,7 +395,19 @@
           <button class="toggle-switch" data-setting="saves">ON</button>
         </div>
       </div>
+      <button id="controls-btn" class="btn" style="margin-bottom: 20px; background-color: #1a6b8c;">CONTROLS</button>
       <button id="settings-back-btn" class="btn">BACK</button>
+    </div>
+	
+	    <!-- Controls Screen -->
+    <div id="controls-screen" class="overlay hidden">
+      <h1 class="title-red" style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 30px;">CONTROLS</h1>
+      <div style="font-size: 1rem; line-height: 2; text-align: center; color: #ccc; max-width: 700px;">
+        <strong>Movement:</strong> A/D or Arrows | Space = Jump & Double Jump<br>
+        <strong>Shoot:</strong> J / Hold J for Charge Shot<br>
+        <strong>Dash:</strong> Hold SHIFT + A/D or Left/Right
+      </div>
+      <button id="controls-back-btn" class="btn" style="margin-top: 30px;">BACK</button>
     </div>
 	
 	    <!-- Intro Letter Screen -->
@@ -695,6 +711,9 @@ function stopWalkSfx() {
     const settingsScreen = document.getElementById('settings-screen');
     const settingsBtn = document.getElementById('settings-btn');
     const settingsBackBtn = document.getElementById('settings-back-btn');
+	const controlsScreen = document.getElementById('controls-screen');
+    const controlsBtn = document.getElementById('controls-btn');
+    const controlsBackBtn = document.getElementById('controls-back-btn');
     const modeScreen = document.getElementById('mode-screen');
     const winScreen = document.getElementById('win-screen');
     const winTitle = document.getElementById('win-title');
@@ -794,7 +813,7 @@ If you wish to breathe surface air again, do as I say.`;
   { id: 'a2', name: 'True Veteran', desc: 'Beat the game in Hard Mode.' },
   { id: 'a3', name: 'Gotta Go Fast', desc: 'Beat the game in Speedrun Mode with a time under 4:30.' },
   { id: 'a4', name: 'What is wrong with you?', desc: 'Defeat Zam.', secret: true },
-  { id: 'a5', name: 'WR Pace', desc: 'Beat the game in Speedrun Mode with a time under 3:20.' },
+  { id: 'a5', name: 'WR Pace', desc: 'Beat the game in Speedrun Mode with a time under 3:30.' },
   { id: 'a6', name: 'No Upgrades', desc: 'Beat the game without any upgrades.' },
   { id: 'a7', name: 'Certified Idiot', desc: 'Fall into a pit within 3 seconds of starting a level.' },
   { id: 'a8', name: 'Pay Respect', desc: 'Stand still on the dead robot for 10 seconds.' },
@@ -802,7 +821,7 @@ If you wish to breathe surface air again, do as I say.`;
   { id: 'a10', name: 'Overkill', desc: 'Kill 100 enemies.' },
   { id: 'a12', name: 'Charge Up', desc: 'Deal over 50% of your total damage to Chupitron using only charge shots.' },
   { id: 'a13', name: 'The Machine That Never Stopped', desc: 'Complete the entire game without standing still for more than 3 seconds at any point.' },
-  { id: 'a11', name: 'Impossible', desc: 'Beat the Zam Route in Hard Mode with no deaths.', secret: true }
+  { id: 'a11', name: 'Impossible', desc: 'Beat the Zam Route in Hard Mode.', secret: true }
 ];
 
     let achievements = {};
@@ -988,6 +1007,14 @@ resetYesBtn.addEventListener('click', () => {
 
         settingsBackBtn.addEventListener('click', () => {
       switchScreen(settingsScreen, homeScreen);
+    });
+	
+	    controlsBtn.addEventListener('click', () => {
+      switchScreen(settingsScreen, controlsScreen);
+    });
+
+    controlsBackBtn.addEventListener('click', () => {
+      switchScreen(controlsScreen, settingsScreen);
     });
 
     let gameState = 'HOME';
@@ -2721,7 +2748,7 @@ if (keys.up) {
   else if (gameMode === 'hard') unlockAchievement('a2');
   else if (gameMode === 'speedrun') {
     if (finalTime < 270) unlockAchievement('a3');
-    if (finalTime < 200) unlockAchievement('a5');
+    if (finalTime < 210) unlockAchievement('a5');
   }
 
   if (!usedUpgrade) {
@@ -6476,10 +6503,10 @@ if (boss.hp <= 0) {
   stopBossMusic();
     playSfx(sfx.bossDeath);
 
-  if (boss.type === 'zam') {
+   if (boss.type === 'zam') {
   unlockAchievement('a4');
 
-  if (gameMode === 'hard' && zamRouteNoDeaths) {
+  if (gameMode === 'hard') {
     unlockAchievement('a11');
   }
 
@@ -8899,18 +8926,52 @@ hitSparks.forEach(sparkGroup => {
           ctx.fillText(formatTime(elapsedSeconds), canvas.width / 2, 40);
         }
 
+                // Level indicator - stylized badge, top left
+        ctx.save();
+        ctx.font = 'bold 28px "Press Start 2P"';
+        const lvlText = `${currentLevel} / 5`;
+        const lvlTextWidth = ctx.measureText(lvlText).width;
+
+        const lvlPadding = 26;
+        const lvlStripeW = 10;
+        const lvlBadgeX = 25;
+        const lvlBadgeY = 20;
+        const lvlBadgeW = lvlStripeW + lvlPadding * 2 + lvlTextWidth;
+        const lvlBadgeH = 64;
+
+        ctx.fillStyle = 'rgba(10, 6, 4, 0.78)';
+        ctx.fillRect(lvlBadgeX, lvlBadgeY, lvlBadgeW, lvlBadgeH);
+
+        ctx.strokeStyle = '#ffcc33';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(lvlBadgeX, lvlBadgeY, lvlBadgeW, lvlBadgeH);
+
+        ctx.fillStyle = '#ffcc33';
+        ctx.fillRect(lvlBadgeX, lvlBadgeY, lvlStripeW, lvlBadgeH);
+
         ctx.fillStyle = '#ffffff';
-        ctx.font = '16px "Press Start 2P"';
         ctx.textAlign = 'left';
-        ctx.fillText(`LEVEL ${currentLevel} / 5`, 30, 45);
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = '#ffcc33';
+        ctx.shadowBlur = 10;
+        ctx.fillText(lvlText, lvlBadgeX + lvlStripeW + lvlPadding, lvlBadgeY + lvlBadgeH / 2);
+        ctx.shadowBlur = 0;
+        ctx.textBaseline = 'alphabetic';
+        ctx.restore();
 
-          if (!isBossRoom) {
-          ctx.fillStyle = enemies.length === 0 ? '#00ff66' : '#ffcc00';
-          ctx.fillText(enemies.length === 0 ? "DOOR UNLOCKED!" : `VICTIMS LEFT: ${enemies.length}`, 30, 80);
+        if (!isBossRoom) {
+          ctx.save();
+          ctx.font = '16px "Press Start 2P"';
+          ctx.textAlign = 'right';
+          ctx.fillStyle = enemies.length === 0 ? '#00ff66' : '#ff3333';
+          ctx.fillText(
+            enemies.length === 0 ? "DOOR UNLOCKED!" : `VICTIMS LEFT: ${enemies.length}`,
+            canvas.width - 15,
+            canvas.height - 10
+          );
+          ctx.restore();
         }
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText("HP: ", canvas.width - 240, 45);
+		
         for (let h = 0; h < player.maxHp; h++) {
           ctx.fillStyle = h < player.hp ? '#ff3311' : '#331111';
           ctx.fillRect(canvas.width - 190 + h * 32, 24, 24, 26);
