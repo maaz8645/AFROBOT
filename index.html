@@ -328,7 +328,7 @@
     <canvas id="gameCanvas" width="1440" height="810"></canvas>
 
     <!-- Home Title Screen -->
-    <div id="home-screen" class="overlay">
+    <div id="home-screen" class="overlay hidden">
        <h1 class="title-red" id="game-title">AFROBOT</h1>
       <button id="start-btn" class="btn">START GAME</button>
       <button id="achievements-btn" class="btn" style="margin-top: 20px; background-color: #6b5b1a;">ACHIEVEMENTS</button>
@@ -475,6 +475,10 @@ const bgMusic = new Audio('music.mp3');
 bgMusic.loop = true;
 bgMusic.volume = 0.7;
 
+const fallWind = new Audio('wind.mp3');
+fallWind.loop = true;
+fallWind.volume = 0;
+
 const bgMusic34 = new Audio('levels3-4.mp3');
 bgMusic34.loop = true;
 bgMusic34.volume = 0.7;
@@ -490,6 +494,46 @@ bossMusicChupitron.volume = 0.7;
 const bossMusicZam = new Audio('zam_boss.mp3');
 bossMusicZam.loop = true;
 bossMusicZam.volume = 0.7;
+
+const homeMusic = new Audio('homescreen.mp3');
+homeMusic.loop = true;
+homeMusic.volume = 0.6;
+
+function playHomeMusic() {
+  if (!gameSettings.music) return;
+  if (homeMusic.paused) {
+    homeMusic.currentTime = 0;
+    homeMusic.play().catch(() => {});
+  }
+}
+
+function stopHomeMusic() {
+  homeMusic.pause();
+  homeMusic.currentTime = 0;
+}
+
+function startFallWind() {
+  if (!gameSettings.music) return;
+
+  fallWind.currentTime = 0;
+  fallWind.volume = 0;
+
+  fallWind.play().catch(() => {});
+
+  const fadeDuration = 3000;
+  const startTime = performance.now();
+
+  function fadeInWind(now) {
+    const progress = Math.min(1, (now - startTime) / fadeDuration);
+    fallWind.volume = progress * 0.7;
+
+    if (progress < 1) {
+      requestAnimationFrame(fadeInWind);
+    }
+  }
+
+  requestAnimationFrame(fadeInWind);
+}
 
 function playBossMusic(track) {
   if (!gameSettings.music) return;
@@ -513,10 +557,21 @@ function unlockMusic() {
   musicUnlocked = true;
   document.removeEventListener('click', unlockMusic);
   document.removeEventListener('keydown', unlockMusic);
+  if (gameState === 'HOME') playHomeMusic();
 }
 
 document.addEventListener('click', unlockMusic);
 document.addEventListener('keydown', unlockMusic);
+    // Left-click advances only the falling intro
+    window.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // left click only
+
+      if (gameState === 'FALLING' && fallIntroPhase === 'falling') {
+        fallIntroPhase = 'impact';
+        fallIntroTimer = 0;
+        fallShakeAmount = 14;
+      }
+    });
 
 function playLevel5Music() {
   if (!gameSettings.music) return;
@@ -642,6 +697,15 @@ function updateLevelMusic(lvl) {
     // Plays a sound effect from the start every time, even if it's
     // already playing (e.g. rapid-fire shooting) by cloning the node.
       const sfxPools = new Map();
+
+function stopSfx(sound) {
+  const pool = sfxPools.get(sound);
+  if (pool) {
+    pool.forEach(a => { a.pause(); a.currentTime = 0; });
+  }
+  sound.pause();
+  sound.currentTime = 0;
+}
 
 function playSfx(sound) {
   if (!gameSettings.sfx) return;
@@ -991,8 +1055,11 @@ resetYesBtn.addEventListener('click', () => {
     bgMusic.pause();
     bgMusic34.pause();
     stopLevel5Music();
+    stopHomeMusic();
   } else if (gameState === 'PLAYING') {
     updateLevelMusic(currentLevel);
+  } else if (gameState === 'HOME') {
+    playHomeMusic();
   }
 }
       });
@@ -1017,7 +1084,22 @@ resetYesBtn.addEventListener('click', () => {
       switchScreen(controlsScreen, settingsScreen);
     });
 
-    let gameState = 'HOME';
+    let gameState = 'STUDIO';
+
+    // --- Pre-intro: studio card + falling-through-the-cave sequence ---
+    let studioTimer = 0;
+    const STUDIO_FADE_IN = 40;
+    const STUDIO_HOLD = 100;
+    const STUDIO_FADE_OUT = 30;
+    const STUDIO_TOTAL = STUDIO_FADE_IN + STUDIO_HOLD + STUDIO_FADE_OUT;
+
+    let fallIntroTimer = 0;
+    let fallIntroPhase = 'falling'; // 'falling' | 'impact' | 'fadeout'
+    let fallShakeAmount = 0;
+    let fallParticles = [];
+    let fallDebris = [];
+    const FALL_IMPACT_DURATION = 14;   // camera-shake flash on "landing"
+    const FALL_FADE_DURATION = 35;     // fade into the home screen
     let gameMode = 'normal'; // 'normal' | 'hard' | 'speedrun'
     let usedSkip = false;
 let gameStartTime = 0;
@@ -2635,8 +2717,9 @@ if (keys.up) {
       switchScreen(modeScreen, homeScreen);
     });
 
-        normalModeBtn.addEventListener('click', () => {
+    normalModeBtn.addEventListener('click', () => {
       gameMode = 'normal';
+      stopHomeMusic();
       modeScreen.classList.add('fade-out');
       setTimeout(() => {
         modeScreen.classList.add('hidden');
@@ -2645,8 +2728,9 @@ if (keys.up) {
       }, 220);
     });
 
-        hardModeBtn.addEventListener('click', () => {
+    hardModeBtn.addEventListener('click', () => {
       gameMode = 'hard';
+      stopHomeMusic();
       modeScreen.classList.add('fade-out');
       setTimeout(() => {
         modeScreen.classList.add('hidden');
@@ -2655,8 +2739,9 @@ if (keys.up) {
       }, 220);
     });
 
-        speedrunModeBtn.addEventListener('click', () => {
+    speedrunModeBtn.addEventListener('click', () => {
       gameMode = 'speedrun';
+      stopHomeMusic();
       modeScreen.classList.add('fade-out');
       setTimeout(() => {
         modeScreen.classList.add('hidden');
@@ -2664,18 +2749,20 @@ if (keys.up) {
         if (gameSettings.introCutscene) { startIntro(); } else { beginRun(); }
       }, 220);
     });
-
+	
          homeBtn.addEventListener('click', () => {
   bgMusic.pause();
   bgMusic34.pause();
   stopLevel5Music();
     stopBossMusic();  
+  stopSfx(sfx.gameComplete);
 
   bgMusic.currentTime = 0;
   bgMusic34.currentTime = 0;
 
   switchScreen(winScreen, homeScreen);
   gameState = 'HOME';
+  playHomeMusic();
 });
 
         retryBtn.addEventListener('click', () => {
@@ -2701,6 +2788,7 @@ if (keys.up) {
       player.maxHp = 5;
       switchScreen(gameoverScreen, homeScreen);
       gameState = 'HOME';
+      playHomeMusic();
     });
 
         function triggerGameOver() {
@@ -5612,7 +5700,15 @@ ctx.fillRect(7, -26, 13, 8);
     }
 
     function update() {
-	if (gameState === 'INTRO') {
+	if (gameState === 'STUDIO') {
+        updateStudioIntro();
+        return;
+      }
+      if (gameState === 'FALLING') {
+        updateFallIntro();
+        return;
+      }
+      if (gameState === 'INTRO') {
         updateIntro();
         return;
       }
@@ -5647,6 +5743,7 @@ ctx.fillRect(7, -26, 13, 8);
 
   gameState = 'HOME';
   homeScreen.classList.remove('hidden');
+  playHomeMusic();
   return;
 }
       } else {
@@ -5693,6 +5790,7 @@ ctx.fillRect(7, -26, 13, 8);
           fadeAlpha = 0;
           gameState = 'HOME';
           homeScreen.classList.remove('hidden');
+          playHomeMusic();
         }
       } else if (fadeState === 'in') {
         fadeAlpha -= 0.03;
@@ -8512,6 +8610,9 @@ ctx.lineTo(0, skyBottomY + 260 - leftDepth);
     function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      if (gameState === 'STUDIO') { renderStudioIntro(); return; }
+      if (gameState === 'FALLING') { renderFallIntro(); return; }
+
       if (gameState === 'CUTSCENE') {
         ctx.fillStyle = '#0d0a1a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -9072,6 +9173,291 @@ hitSparks.forEach(sparkGroup => {
       if (fadeAlpha > 0) {
         ctx.fillStyle = `rgba(0, 0, 0, ${fadeAlpha})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+	
+	    // ============================================================
+    // STUDIO CARD ("MAAZ PRESENTS")
+    // ============================================================
+ function updateStudioIntro() {
+  studioTimer++;
+
+  if (studioTimer >= STUDIO_TOTAL) {
+    studioTimer = 0;
+
+    // Brief black transition before the falling scene
+    ctx.save();
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    gameState = 'FALLING';
+    startFallIntro();
+  }
+}
+
+    function renderStudioIntro() {
+      const w = canvas.width, h = canvas.height;
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, w, h);
+
+      let alpha = 1;
+      if (studioTimer < STUDIO_FADE_IN) {
+        alpha = studioTimer / STUDIO_FADE_IN;
+      } else if (studioTimer > STUDIO_FADE_IN + STUDIO_HOLD) {
+        const t = studioTimer - STUDIO_FADE_IN - STUDIO_HOLD;
+        alpha = 1 - (t / STUDIO_FADE_OUT);
+      }
+      alpha = Math.max(0, Math.min(1, alpha));
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '26px "Press Start 2P"';
+      ctx.shadowColor = 'rgba(255,255,255,0.4)';
+      ctx.shadowBlur = 14;
+      ctx.fillText('MAAZ', w / 2, h / 2 - 26);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#999999';
+      ctx.font = '14px "Press Start 2P"';
+      ctx.fillText('P R E S E N T S', w / 2, h / 2 + 16);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w / 2 - 110, h / 2 + 40);
+      ctx.lineTo(w / 2 + 110, h / 2 + 40);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ============================================================
+    // FALLING-THROUGH-THE-CAVE INTRO
+    // ============================================================
+function startFallIntro() {
+  fallIntroTimer = 0;
+  fallIntroPhase = 'falling';
+  fallShakeAmount = 0;
+
+  startFallWind();
+      fallParticles = [];
+      fallDebris = [];
+
+      for (let i = 0; i < 40; i++) {
+        fallParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          speed: 2 + Math.random() * 4,
+          drift: (Math.random() - 0.5) * 1.5
+        });
+      }
+      for (let i = 0; i < 10; i++) {
+        fallDebris.push({
+          x: Math.random() * canvas.width,
+          y: -Math.random() * canvas.height,
+          speed: 3 + Math.random() * 3,
+          size: 6 + Math.random() * 14,
+          rot: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.1
+        });
+      }
+    }
+
+     function updateFallIntro() {
+      fallIntroTimer++;
+
+      if (fallIntroPhase === 'falling') {
+        // Ramps up for the first ~2.5s, then holds at a steady fast fall speed
+        const rampProgress = Math.min(1, fallIntroTimer / 150);
+        const fallSpeed = 4 + rampProgress * 10;
+
+        fallParticles.forEach(p => {
+          p.y += fallSpeed * 0.6 + p.speed;
+          p.x += p.drift;
+          if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+        });
+        fallDebris.forEach(d => {
+          d.y += fallSpeed * 0.9 + d.speed;
+          d.rot += d.rotSpeed;
+          if (d.y > canvas.height + 60) {
+            d.y = -60 - Math.random() * 200;
+            d.x = Math.random() * canvas.width;
+          }
+        });
+        // No automatic exit here - only the mousedown listener advances the phase
+      } else if (fallIntroPhase === 'impact') {
+        fallShakeAmount *= 0.85;
+        if (fallIntroTimer >= FALL_IMPACT_DURATION) {
+          fallIntroPhase = 'fadeout';
+          fallIntroTimer = 0;
+        }
+      } else if (fallIntroPhase === 'fadeout') {
+        if (fallIntroTimer >= FALL_FADE_DURATION) {
+          gameState = 'HOME';
+          homeScreen.classList.remove('hidden');
+          homeScreen.classList.add('fade-in-start');
+          void homeScreen.offsetWidth;
+          homeScreen.classList.remove('fade-in-start');
+          if (typeof playHomeMusic === 'function') playHomeMusic();
+        }
+      }
+    }
+
+    function renderFallIntro() {
+      const w = canvas.width, h = canvas.height;
+
+      let shakeX = 0, shakeY = 0;
+      if (fallIntroPhase === 'impact') {
+        shakeX = (Math.random() - 0.5) * fallShakeAmount;
+        shakeY = (Math.random() - 0.5) * fallShakeAmount;
+      }
+
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+
+      const bgGrad = ctx.createRadialGradient(w / 2, h * 0.35, 40, w / 2, h * 0.5, h * 0.9);
+      bgGrad.addColorStop(0, '#241a10');
+      bgGrad.addColorStop(0.5, '#140d08');
+      bgGrad.addColorStop(1, '#040302');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(-20, -20, w + 40, h + 40);
+
+      const rampProgress = Math.min(1, fallIntroTimer / 150);
+      const fallSpeed = 4 + rampProgress * 10;
+      const scrollOffset = (fallIntroTimer * fallSpeed) % 300;
+
+      function drawTunnelWall(side) {
+        const baseX = side === 'left' ? w * 0.18 : w * 0.82;
+        const dir = side === 'left' ? 1 : -1;
+        ctx.fillStyle = '#1c130b';
+        ctx.beginPath();
+        ctx.moveTo(side === 'left' ? -20 : w + 20, -20);
+        for (let y = -60; y < h + 60; y += 40) {
+          const jag = (pseudo((y + scrollOffset) * 0.03 + (side === 'left' ? 0 : 99)) - 0.5) * 60;
+          const px = baseX + jag * dir + Math.sin((y + scrollOffset) * 0.01) * 20;
+          ctx.lineTo(px, y);
+        }
+        ctx.lineTo(side === 'left' ? -20 : w + 20, h + 60);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(120,90,55,0.25)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        for (let y = -60; y < h + 60; y += 40) {
+          const jag = (pseudo((y + scrollOffset) * 0.03 + (side === 'left' ? 0 : 99)) - 0.5) * 60;
+          const px = baseX + jag * dir + Math.sin((y + scrollOffset) * 0.01) * 20;
+          if (y === -60) ctx.moveTo(px, y); else ctx.lineTo(px, y);
+        }
+        ctx.stroke();
+      }
+      drawTunnelWall('left');
+      drawTunnelWall('right');
+
+      for (let i = 0; i < 14; i++) {
+        const seedY = (i * 137 + scrollOffset * 1.3) % (h + 200) - 100;
+        const side = i % 2 === 0 ? 0.12 : 0.88;
+        const cx = w * side + Math.sin(i * 3.1) * 20;
+        const glowColor = i % 3 === 0 ? '#7ad2ff' : '#c98fff';
+        ctx.fillStyle = glowColor;
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(cx, seedY, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      fallDebris.forEach(d => {
+        ctx.save();
+        ctx.translate(d.x, d.y);
+        ctx.rotate(d.rot);
+        ctx.fillStyle = '#2c2015';
+        ctx.beginPath();
+        ctx.moveTo(-d.size / 2, -d.size / 3);
+        ctx.lineTo(d.size / 2, -d.size / 2);
+        ctx.lineTo(d.size / 3, d.size / 2);
+        ctx.lineTo(-d.size / 2, d.size / 3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      ctx.strokeStyle = 'rgba(200,180,140,0.35)';
+      ctx.lineWidth = 1.5;
+      fallParticles.forEach(p => {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - p.drift * 2, p.y - 10 - fallSpeed);
+        ctx.stroke();
+      });
+
+      const bobX = w / 2 + Math.sin(fallIntroTimer * 0.06) * 26;
+      const bobY = h * 0.42 + Math.sin(fallIntroTimer * 0.1) * 6;
+      const wobble = Math.sin(fallIntroTimer * 0.05) * 0.12;
+
+      player.dashActive = false;
+      player.charging = false;
+      player.landTimer = 0;
+      player.grounded = false;
+
+      ctx.save();
+      ctx.translate(bobX, bobY);
+      ctx.rotate(wobble);
+      ctx.translate(-bobX, -bobY);
+      drawDetailedAfrobot(bobX - player.width / 2, bobY - player.height / 2, 'right', false, false, 'down', fallIntroTimer, false, 8);
+      ctx.restore();
+
+      // Exclamation mark above his head, bobbing along with him
+      if (fallIntroPhase === 'falling') {
+        ctx.save();
+        const exclaimY = bobY - player.height / 2 - 34 + Math.sin(fallIntroTimer * 0.15) * 4;
+        const flash = Math.floor(fallIntroTimer / 20) % 2 === 0;
+        ctx.fillStyle = flash ? '#ffee33' : '#ffffff';
+        ctx.font = 'bold 26px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = '#000000';
+        ctx.shadowBlur = 6;
+        ctx.fillText('!', bobX, exclaimY);
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+
+      const vignette = ctx.createRadialGradient(w / 2, h / 2, h * 0.25, w / 2, h / 2, h * 0.75);
+      vignette.addColorStop(0, 'rgba(0,0,0,0)');
+      vignette.addColorStop(1, 'rgba(0,0,0,0.75)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(-20, -20, w + 40, h + 40);
+
+      ctx.restore();
+
+      if (fallIntroPhase === 'falling' && fallIntroTimer >= 180) {
+        ctx.save();
+        ctx.globalAlpha = 0.6 + Math.sin(fallIntroTimer * 0.08) * 0.15;
+        ctx.fillStyle = '#ffaa66';
+        ctx.font = '10px "Press Start 2P"';
+        ctx.textAlign = 'right';
+        ctx.fillText('CLICK TO CONTINUE', w - 24, h - 24);
+        ctx.restore();
+      }
+	  
+      if (fallIntroPhase === 'impact') {
+        const flashAlpha = Math.max(0, 1 - fallIntroTimer / FALL_IMPACT_DURATION);
+        ctx.fillStyle = `rgba(255,240,210,${flashAlpha * 0.8})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      if (fallIntroPhase === 'fadeout') {
+        const alpha = Math.min(1, fallIntroTimer / (FALL_FADE_DURATION * 0.6));
+        ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+        ctx.fillRect(0, 0, w, h);
       }
     }
 
