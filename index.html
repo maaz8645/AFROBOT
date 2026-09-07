@@ -127,6 +127,19 @@
       transform: translate(2px, 2px);
       box-shadow: 2px 2px 0px #551100;
     }
+	
+	.version-number {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+
+  color: #777780;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+
+  text-shadow: 2px 2px 0px #090909;
+  opacity: 0.8;
+}
 
     .hidden {
       display: none !important;
@@ -333,6 +346,8 @@
       <button id="start-btn" class="btn">START GAME</button>
       <button id="achievements-btn" class="btn" style="margin-top: 20px; background-color: #6b5b1a;">ACHIEVEMENTS</button>
       <button id="settings-btn" class="btn" style="margin-top: 20px; background-color: #555555;">SETTINGS</button>
+	  
+	  <div class="version-number">v4.0.9</div>
     </div>
 
         <!-- Achievements Screen -->
@@ -570,9 +585,10 @@ document.addEventListener('keydown', unlockMusic);
         fallIntroPhase = 'impact';
         fallIntroTimer = 0;
         fallShakeAmount = 14;
+        visorFlashTimer = VISOR_FLASH_DURATION;
       }
     });
-
+	
 function playLevel5Music() {
   if (!gameSettings.music) return;
   if (bgMusic5.paused) {
@@ -1100,6 +1116,9 @@ resetYesBtn.addEventListener('click', () => {
     let fallDebris = [];
     const FALL_IMPACT_DURATION = 14;   // camera-shake flash on "landing"
     const FALL_FADE_DURATION = 35;     // fade into the home screen
+    const FALL_FADE_IN_DURATION = 45;  // fade in from black when the fall begins
+    const VISOR_FLASH_DURATION = 50;   // how long the visor glow/flash lasts after impact
+    let visorFlashTimer = 0;
     let gameMode = 'normal'; // 'normal' | 'hard' | 'speedrun'
     let usedSkip = false;
 let gameStartTime = 0;
@@ -2885,7 +2904,8 @@ if (keys.up) {
     aimDir,
     animFrame,
     isCutscene = false,
-    vy = 0
+    vy = 0,
+    visorGlow = 0
 ) {
     ctx.save();
 
@@ -3380,7 +3400,16 @@ if (keys.up) {
         2 * p
     );
 
-    ctx.fillStyle = C_RED;
+    // Brightens and glows when visorGlow > 0 (impact/landing flash)
+    const visorFlashColor = visorGlow > 0
+        ? `rgb(255, ${Math.round(51 + visorGlow * 160)}, ${Math.round(17 + visorGlow * 160)})`
+        : C_RED;
+
+    ctx.fillStyle = visorFlashColor;
+    if (visorGlow > 0) {
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 8 + visorGlow * 22;
+    }
 
     ctx.fillRect(
         -2 * p,
@@ -3388,6 +3417,8 @@ if (keys.up) {
         8 * p,
         3 * p
     );
+
+    ctx.shadowBlur = 0;
 
     // Visor reflection
     ctx.fillStyle = '#ffffff';
@@ -9242,6 +9273,7 @@ function startFallIntro() {
   fallIntroTimer = 0;
   fallIntroPhase = 'falling';
   fallShakeAmount = 0;
+  visorFlashTimer = 0;
 
   startFallWind();
       fallParticles = [];
@@ -9269,6 +9301,7 @@ function startFallIntro() {
 
      function updateFallIntro() {
       fallIntroTimer++;
+      if (visorFlashTimer > 0) visorFlashTimer--;
 
       if (fallIntroPhase === 'falling') {
         // Ramps up for the first ~2.5s, then holds at a steady fast fall speed
@@ -9408,11 +9441,16 @@ function startFallIntro() {
       player.landTimer = 0;
       player.grounded = false;
 
+      // Fade-with-flicker glow, active only after impact/click
+      const visorGlowRatio = visorFlashTimer > 0
+        ? (visorFlashTimer / VISOR_FLASH_DURATION) * (0.6 + 0.4 * Math.sin(fallIntroTimer * 1.2))
+        : 0;
+
       ctx.save();
       ctx.translate(bobX, bobY);
       ctx.rotate(wobble);
       ctx.translate(-bobX, -bobY);
-      drawDetailedAfrobot(bobX - player.width / 2, bobY - player.height / 2, 'right', false, false, 'down', fallIntroTimer, false, 8);
+      drawDetailedAfrobot(bobX - player.width / 2, bobY - player.height / 2, 'right', false, false, 'down', fallIntroTimer, false, 8, visorGlowRatio);
       ctx.restore();
 
       // Exclamation mark above his head, bobbing along with him
@@ -9437,6 +9475,13 @@ function startFallIntro() {
       ctx.fillRect(-20, -20, w + 40, h + 40);
 
       ctx.restore();
+
+      // Smooth fade-in from black when the falling sequence begins
+      if (fallIntroPhase === 'falling' && fallIntroTimer < FALL_FADE_IN_DURATION) {
+        const fadeInAlpha = 1 - (fallIntroTimer / FALL_FADE_IN_DURATION);
+        ctx.fillStyle = `rgba(0,0,0,${fadeInAlpha})`;
+        ctx.fillRect(0, 0, w, h);
+      }
 
       if (fallIntroPhase === 'falling' && fallIntroTimer >= 180) {
         ctx.save();
