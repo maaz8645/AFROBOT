@@ -847,7 +847,6 @@
     const bgCacheCtx = bgCache.getContext('2d');
 
     function cacheBackground() {
-      // Force boss room and corridor backgrounds to use the correct reference sizing
       const refWidth = isZamCorridor ? 5200 : ((isBossRoom) ? 4200 : camera.worldWidth);
       const refHeight = (isBossRoom || isZamCorridor) ? 2200 : camera.worldHeight;
 
@@ -870,10 +869,16 @@
       
       bgCacheCtx.restore();
     }
-	    // --- Background music ---
+	
 const bgMusic = new Audio('music.mp3');
 bgMusic.loop = true;
 bgMusic.volume = 0.7;
+
+const chargeShotSfx = new Audio('chargeshot.mp3');
+chargeShotSfx.volume = 0.75;
+
+const maxChargeAudio = new Audio('chargeshot.mp3');
+maxChargeAudio.volume = 0.4;
 
 const fallWind = new Audio('wind.mp3');
 fallWind.loop = true;
@@ -1782,6 +1787,7 @@ let neverStoppedFailed = false;
     let bossWallLeft = 0;
     let bossWallRight = 0;
     let boss = null;
+	let bossBannerTimer = 0;
 	let chupitronChargedDamage = 0;
 	let chupitronTotalDamage = 0;
 
@@ -2243,7 +2249,7 @@ function createHitSpark(x, y, color = '#ff3333') {
         );
 
         structures = ground.hutXs.slice(0, 2).map(hx => ({ x: hx, y: groundY - 140, w: 120, h: 140, style: 'hut' }));
-        decorations = buildDecorations('lush', 3200, groundY);
+        decorations = buildDecorations('lush', 3200, ground.segs);
 
         // Guaranteed-flat safety pads under the jump pads and the NPC (the
         // procedural ground band varies in height, so these ensure solid footing)
@@ -2340,7 +2346,7 @@ function createHitSpark(x, y, color = '#ff3333') {
     ];
 
         structures = ground.hutXs.slice(0, 2).map(hx => ({ x: hx, y: groundY - 140, w: 120, h: 140, style: 'hut' }));
-        decorations = buildDecorations('lush', 3500, groundY);
+        decorations = buildDecorations('lush', 3500, ground.segs);
 
         // Level 2: mini bats + big bats + zombies
         enemies = [
@@ -2408,7 +2414,7 @@ function createHitSpark(x, y, color = '#ff3333') {
         ];
 
         structures = ground.hutXs.slice(0, 2).map(hx => ({ x: hx, y: groundY - 140, w: 130, h: 140, style: 'mudhut' }));
-        decorations = buildDecorations('muddy', 3800, groundY);
+        decorations = buildDecorations('muddy', 3800, ground.segs);
 
         // Level 3: worms + zombies + mini bats
         enemies = [
@@ -2512,7 +2518,7 @@ function createHitSpark(x, y, color = '#ff3333') {
         ];
 
         structures = ground.hutXs.slice(0, 2).map(hx => ({ x: hx, y: groundY - 140, w: 130, h: 140, style: 'mudhut' }));
-        decorations = buildDecorations('muddy', 4000, groundY);
+        decorations = buildDecorations('muddy', 4000, ground.segs);
 
         // Level 4: worms + zombies + big bats
         enemies = [
@@ -2594,7 +2600,7 @@ function createHitSpark(x, y, color = '#ff3333') {
         ];
 
         structures = ground.hutXs.slice(0, 2).map(hx => ({ x: hx, y: groundY - 170, w: 140, h: 170, style: 'tower' }));
-        decorations = buildDecorations('rocky', 4200, groundY);
+        decorations = buildDecorations('rocky', 4200, ground.segs);
 
         // Level 5: golems (bigger) + big bats + worms + zombies - the climax
         enemies = [
@@ -3123,88 +3129,103 @@ if (!b.hidden) {
       }
     }
 
-    function fireBullet(chargeRatio) {
-    playSfx(sfx.shoot);
-    const ratio = chargeRatio || 0;
-    let bvx = 0;
-    let bvy = 0;
-    let bx = player.x + player.width / 2;
-    let by = player.y + player.height / 2;
+   function fireBullet(chargeRatio) {
+        const ratio = chargeRatio || 0;
+        let bvx = 0;
+        let bvy = 0;
+        
+        // Align bullet spawn exactly to the gun muzzle tip based on aim direction & facing
+        const pCenterX = player.x + player.width / 2;
+        const pCenterY = player.y + player.height / 2;
+        let bx = pCenterX;
+        let by = pCenterY - 4;
 
-    // --- 1. SNAPPY RECOIL KICKBACK ---
-    // Nudge the player slightly in the opposite direction of fire to give the gun weight
-    if (keys.up) {
-        bx += 2 * 1.2;
-        by += -22 * 1.2;
-        player.vy += 1.2; // Slight downward kick when firing up
-    } else if (keys.down) {
-        bx += 2 * 1.2;
-        by += 22 * 1.2;
-        player.vy -= 1.2; // Slight upward kick when firing down
-    } else if (player.facing === 'left') {
-        bx += -21 * 1.2;
-        by += 3 * 1.2;
-        player.vx += 1.5; // Kick back to the right
-    } else {
-        bx += 21 * 1.2;
-        by += 3 * 1.2;
-        player.vx -= 1.5; // Kick back to the left
-    }
+        if (keys.up) {
+            player.aimDir = 'up';
+            by = player.y - 4;
+        } else if (keys.down) {
+            player.aimDir = 'down';
+            by = player.y + player.height + 2;
+        } else if (player.facing === 'left') {
+            player.aimDir = 'left';
+            bx = player.x - 6;
+        } else {
+            player.aimDir = 'right';
+            bx = player.x + player.width + 6;
+        }
 
-    const speedMag = 15 - ratio * 2; // Slightly faster base speed for snappier feel
+        // ALWAYS play the normal shoot sound when firing any shot
+        playSfx(sfx.shoot);
 
-    if (keys.up) {
-        player.aimDir = 'up';
-        bvy = -speedMag;
-    } else if (keys.down) {
-        player.aimDir = 'down';
-        bvy = speedMag;
-    } else if (player.facing === 'left') {
-        player.aimDir = 'left';
-        bvx = -speedMag;
-    } else {
-        player.aimDir = 'right';
-        bvx = speedMag;
-    }
+        const speedMag = 15 - ratio * 2;
+        // ... (rest of your fireBullet function stays the same)
 
-    const maxRadius = player.bulletSize * 2.4 + 6;
-    const radius = player.bulletSize + (maxRadius - player.bulletSize) * ratio;
-    const damage = 1 + Math.round(ratio * 3) + (player.bulletDamageBonus || 0);
-    const isCharged = ratio > 0.25;
+        if (keys.up) {
+            bvy = -speedMag;
+        } else if (keys.down) {
+            bvy = speedMag;
+        } else if (player.facing === 'left') {
+            bvx = -speedMag;
+        } else {
+            bvx = speedMag;
+        }
 
-    bullets.push({ 
-        x: bx, 
-        y: by, 
-        vx: bvx, 
-        vy: bvy, 
-        life: 70 + ratio * 20, 
-        radius: radius, 
-        damage: damage, 
-        charged: isCharged 
-    });
-	spawnShellCasing(bx, by, player.facing === 'left' ? -1 : 1);
+        const maxRadius = player.bulletSize * 2.4 + 10;
+        const radius = player.bulletSize + (maxRadius - player.bulletSize) * ratio;
+        
+        // Tiered damage progression: 1 -> 2 -> 4 -> 8 (at max charge)
+        let baseDmg = 1;
+        if (ratio >= 0.95) {
+            baseDmg = 8; // Max charge powerhouse shot
+        } else if (ratio >= 0.5) {
+            baseDmg = 4; // Mid-high tier
+        } else if (ratio >= 0.2) {
+            baseDmg = 2; // Low tier
+        } else {
+            baseDmg = 1; // Tap shot
+        }
+        const damage = baseDmg + (player.bulletDamageBonus || 0);
+        const isCharged = ratio >= 0.95;
 
-    // --- 2. INSTANT MUZZLE FLASH PARTICLES ---
-    // Spawn a quick burst of bright energy sparks right at the gun tip
-    for (let m = 0; m < 5; m++) {
-        const ang = Math.atan2(bvy, bvx) + (Math.random() - 0.5) * 0.8;
-        const spd = 2 + Math.random() * 4;
-        hitSparks.push({
-            particles: [{
-                x: bx,
-                y: by,
-                vx: Math.cos(ang) * spd,
-                vy: Math.sin(ang) * spd,
-                life: 8,
-                maxLife: 8,
-                size: 2 + Math.random() * 2,
-                color: isCharged ? '#ffaa00' : '#00f0ff'
-            }],
-            shockwave: m === 0 ? { r: 2, maxR: 14, alpha: 0.8 } : null,
-            color: isCharged ? '#ffaa00' : '#00f0ff'
+        bullets.push({ 
+            x: bx, 
+            y: by, 
+            vx: bvx, 
+            vy: bvy, 
+            life: 70 + ratio * 20, 
+            radius: radius, 
+            damage: damage, 
+            charged: isCharged 
         });
+        
+        spawnShellCasing(bx, by, player.facing === 'left' ? -1 : 1);
+
+        // Trigger a heavy screen bump and player recoil if it's an 8-damage max shot
+        if (damage >= 8) {
+            triggerScreenShake(12, 6);
+            player.vx -= (player.facing === 'left' ? -4 : 4);
+        }
+
+        // Muzzle flash particle burst
+        for (let m = 0; m < 5; m++) {
+            const ang = Math.atan2(bvy, bvx) + (Math.random() - 0.5) * 0.8;
+            const spd = 2 + Math.random() * 4;
+            hitSparks.push({
+                particles: [{
+                    x: bx,
+                    y: by,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd,
+                    life: 8,
+                    maxLife: 8,
+                    size: 2 + Math.random() * 2,
+                    color: isCharged ? '#ffaa00' : '#00f0ff'
+                }],
+                shockwave: m === 0 ? { x: bx, y: by, r: 2, maxR: 14, alpha: 0.8 } : null,
+                color: isCharged ? '#ffaa00' : '#00f0ff'
+            });
+        }
     }
-}
 	
     function formatTime(totalSeconds) {
       const m = Math.floor(totalSeconds / 60);
@@ -4329,8 +4350,43 @@ if (!b.hidden) {
       }
     }
 
+function drawEntityHealthBar(e) {
+        if (e.hp === undefined) return;
+        
+        // Automatically set maxHp the first time we see the enemy
+        if (!e.maxHp) {
+            e.maxHp = e.hp;
+        }
+
+        // Only show health bars if the enemy has taken damage or is a golem
+        if (e.hp >= e.maxHp && e.type !== 'golem') return;
+
+        const ratio = Math.max(0, Math.min(1, e.hp / e.maxHp));
+        const barW = Math.max(32, e.w || 32);
+        const barH = 4;
+        
+        // Relative coordinates centered above the enemy
+        const barX = -barW / 2;
+        const barY = -((e.h || 32) / 2) - 12;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(10, 12, 16, 0.88)';
+        ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+        
+        let fillColor = '#00ff66';
+        if (ratio < 0.6) fillColor = '#ffcc00';
+        if (ratio < 0.25) fillColor = '#ff3311';
+
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(barX, barY, barW * ratio, barH);
+
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+        ctx.restore();
+    }
+	
 function drawEnemies(e) {
-  // Don't spend time drawing enemies that cannot possibly be visible.
   const padding = 100;
 
   if (
@@ -4341,19 +4397,19 @@ function drawEnemies(e) {
   ) {
     return;
   }
-
   ctx.save();
-
   ctx.translate(e.x + e.w / 2, e.y + e.h / 2);
+  
+  // Call health bar right here
+  drawEntityHealthBar(e);
 
-  // Scale the visual sprite to match the HP-based hitbox.
   const visualScale = e.healthScale || 1;
   ctx.scale(visualScale, visualScale);
   
   if (e.hitFlashTimer > 0) {
-        e.hitFlashTimer--;
-        ctx.filter = 'brightness(10)';
-      }
+      e.hitFlashTimer--;
+      ctx.filter = 'brightness(10)';
+  }
 
               if (e.type === 'zombie') {
     if (e.vx < 0) ctx.scale(-1, 1);
@@ -5039,6 +5095,8 @@ function drawEnemies(e) {
   if (d.state === 'idle') {
     ctx.save();
     ctx.translate(centerX, centerY);
+	
+	drawEntityHealthBar(d);
 
     const maxRadius = d.range * 0.55;
     
@@ -5157,6 +5215,7 @@ function drawEnemies(e) {
     function drawBirdEnemy(bird) {
       ctx.save();
       ctx.translate(bird.x + bird.w / 2, bird.y + bird.h / 2);
+	  drawEntityHealthBar(bird);
       ctx.scale(1.5, 1.5);
       if (bird.vx < 0) ctx.scale(-1, 1);
       const flap = Math.sin(player.animTimer * 0.4) * 10;
@@ -6623,8 +6682,29 @@ function drawEnemies(e) {
 
       // --- Charge shot: holding J/C builds charge, capped at 2s; fires on release ---
       if (keys.shootHeld && player.chargeTimer < 120) {
-        player.chargeTimer++;
-      }
+    player.chargeTimer++;
+    // The exact frame it clicks to 120 (max charge), trigger a feedback pulse!
+    if (player.chargeTimer === 114) {
+        try {
+            chargeShotSfx.currentTime = 0;
+            chargeShotSfx.play().catch(() => {});
+        } catch (e) {}
+        
+        // Calculate exact gun tip coordinates based on facing/aim
+        const tipX = keys.up ? (player.x + player.width / 2) : (player.facing === 'left' ? player.x - 6 : player.x + player.width + 6);
+        const tipY = keys.up ? player.y - 4 : (keys.down ? player.y + player.height + 2 : player.y + player.height / 2 - 4);
+
+        // Heavy multi-layer spark burst + expanding energy ring (no screen shake)
+        createHitSpark(tipX, tipY, '#ffcc00', 16, 28);
+        createHitSpark(tipX, tipY, '#ffffff', 10, 18);
+
+        hitSparks.push({
+            particles: [],
+            shockwave: { x: tipX, y: tipY, r: 4, maxR: 45, alpha: 1.0 },
+            color: '#ffcc00'
+        });
+    }
+}
 
       // --- Dash: hold SHIFT + Left/Right to charge for 1.2s, then burst.
       // Changing direction (or looking up/down) does NOT reset the charge -
@@ -7110,10 +7190,11 @@ if (deadRobot && currentLevel === 1) {
         updatePressurePlates();
       }
 
-                if (isBossRoom && !bossLocked && player.x > 2800) {
+  if (isBossRoom && !bossLocked && player.x > 2800) {
   bossLocked = true;
   boss.active = true;
   stopLevel5Music();
+  bossBannerTimer = 140; // Triggers the cinematic banner introduction
 
   bossWallLeft = 2740;
   bossWallRight = 4160;
@@ -7139,12 +7220,16 @@ if (deadRobot && currentLevel === 1) {
         if (boss.laserCooldown > 0) boss.laserCooldown--;
         if (boss.sideLaserCooldown > 0) boss.sideLaserCooldown--;
 
-        if (boss.state === 'track') {
+       if (boss.state === 'track') {
+          // Rage mode activates under 50% health (faster speed & tighter cooldowns)
+          const isRage = boss.hp <= boss.maxHp * 0.5;
+          const moveSpeed = isRage ? 3.6 : 2.7;
+
           if (player.x + player.width / 2 < boss.x + boss.w / 2) {
-            boss.vx = -2.7;
+            boss.vx = -moveSpeed;
             boss.facing = 'left';
           } else {
-            boss.vx = 2.7;
+            boss.vx = moveSpeed;
             boss.facing = 'right';
           }
 
@@ -7210,8 +7295,13 @@ if (deadRobot && currentLevel === 1) {
           boss.dashTimer--;
           if (boss.dashTimer <= 0) {
             boss.state = 'track';
-            boss.cooldownTimer = 50;
+            const isRage = boss.hp <= boss.maxHp * 0.5;
+            boss.cooldownTimer = isRage ? 25 : 50; // Quicker recovery in rage mode
             boss.vx = 0;
+            
+            // Ground shockwaves sent out when crashing his heavy tread into the arena walls
+            groundWaves.push({ x: boss.x + boss.w / 2, dir: -1, y: boss.y + boss.h, len: 22, width: 38, speed: 5.5 });
+            groundWaves.push({ x: boss.x + boss.w / 2, dir: 1, y: boss.y + boss.h, len: 22, width: 38, speed: 5.5 });
           }
         } else if (boss.state === 'slam') {
           boss.vx = 0;
@@ -7936,58 +8026,158 @@ wasGrounded = player.grounded;
 player.isMoving = isMoving;
 player.animTimer++;
 }
-   // --- Background Image Assets ---
+  // --- Background Image Assets ---
 const bgImages = {
     lush: new Image(),
     muddy: new Image(),
     rocky: new Image()
 };
 
+// Re-cache automatically as soon as each PNG finishes loading so they always show up
+Object.values(bgImages).forEach(img => {
+    img.onload = () => {
+        if (typeof cacheBackground === 'function' && camera.worldWidth > 0) {
+            cacheBackground();
+        }
+    };
+});
+
 // These must match the filenames of the generated images you saved
 bgImages.lush.src = 'bg-lush.png';
 bgImages.muddy.src = 'bg-muddy.png';
 bgImages.rocky.src = 'bg-rocky.png';
 
-// --- Lightweight Image Background Renderer ---
+// --- Multi-Layer Parallax Cavern Renderer ---
 function renderCaveBackground(targetCtx) {
     const ctx = targetCtx;
     const levelWidth = camera.worldWidth;
     const levelHeight = camera.worldHeight;
 
-    let currentBgImage;
-    if (currentLevel <= 2) {
-        currentBgImage = bgImages.lush;
-    } else if (currentLevel <= 4) {
+    let theme = 'lush';
+    let currentBgImage = bgImages.lush;
+    if (currentLevel >= 3 && currentLevel <= 4) {
+        theme = 'muddy';
         currentBgImage = bgImages.muddy;
-    } else {
+    } else if (currentLevel >= 5) {
+        theme = 'rocky';
         currentBgImage = bgImages.rocky;
     }
 
-    // Fallback dark color
+    // Fallback dark cavern base color
     ctx.fillStyle = '#0d0a1a';
-    ctx.fillRect(0, 0, levelWidth, levelHeight);
+    ctx.fillRect(0, -500, levelWidth, levelHeight + 500);
 
-    // Draw the background image
-if (currentBgImage.complete && currentBgImage.naturalWidth !== 0) {
+    // 1. Draw your PNG background with a subtle slow parallax offset
+    if (currentBgImage.complete && currentBgImage.naturalWidth !== 0) {
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        // This stretches the single image across the full level width instead of tiling
-        ctx.drawImage(currentBgImage, 0, 0, levelWidth, levelHeight);
-        
-        // Tile the background image across the entire world width if it's wider than the image
-        const imgWidth = currentBgImage.naturalWidth || levelWidth;
-        for (let bgX = 0; bgX < levelWidth; bgX += imgWidth) {
-            ctx.drawImage(currentBgImage, bgX, 0, imgWidth, levelHeight);
+
+        const imgW = currentBgImage.naturalWidth;
+        const imgH = currentBgImage.naturalHeight;
+        const targetH = levelHeight;
+        const targetW = imgW * (targetH / imgH);
+
+        for (let bgX = 0; bgX < levelWidth; bgX += targetW) {
+            ctx.drawImage(currentBgImage, bgX, 0, targetW, targetH);
         }
-        
-        // --- ATMOSPHERIC DIMMING / DEPTH LAYER ---
-        // This darkens the background so mobs stand out clearly.
-        // Change the last number (0.55) to 0.4 if you want it brighter, or 0.7 if you want it darker.
-        ctx.fillStyle = 'rgba(8, 6, 18, 0.55)';
+
+        // Atmospheric tint matching level theme
+        ctx.fillStyle = theme === 'lush' 
+            ? 'rgba(10, 25, 20, 0.28)' 
+            : (theme === 'muddy' ? 'rgba(30, 15, 10, 0.3)' : 'rgba(15, 15, 35, 0.3)');
         ctx.fillRect(0, 0, levelWidth, levelHeight);
-        
+
+        // Vignette & Depth Shadow
+        const depthGrad = ctx.createLinearGradient(0, 0, 0, levelHeight);
+        depthGrad.addColorStop(0, 'rgba(5, 4, 12, 0.55)');
+        depthGrad.addColorStop(0.5, 'rgba(5, 4, 12, 0.2)');
+        depthGrad.addColorStop(1, 'rgba(3, 2, 8, 0.88)');
+        ctx.fillStyle = depthGrad;
+        ctx.fillRect(0, 0, levelWidth, levelHeight);
+
         ctx.restore();
     }
+
+    // 2. Far-Distant Parallax Cavern Silhouettes (Creates true 3D depth)
+    const silhouetteCol = theme === 'lush' ? '#060a0f' : (theme === 'muddy' ? '#0f0806' : '#070810');
+    ctx.fillStyle = silhouetteCol;
+    ctx.beginPath();
+    ctx.moveTo(0, levelHeight);
+    for (let x = 0; x <= levelWidth; x += 120) {
+        const hOffset = Math.sin(x * 0.003) * 120 + Math.cos(x * 0.001) * 80;
+        ctx.lineTo(x, levelHeight * 0.45 + hOffset);
+    }
+    ctx.lineTo(levelWidth, levelHeight);
+    ctx.closePath();
+    ctx.fill();
+
+    // 3. Diagonal Underground Light Shafts
+    const beamColor = theme === 'lush'
+        ? 'rgba(82, 229, 168, 0.04)'
+        : (theme === 'muddy' ? 'rgba(255, 170, 90, 0.035)' : 'rgba(130, 120, 255, 0.04)');
+    ctx.fillStyle = beamColor;
+    for (let bx = 350; bx < levelWidth - 300; bx += 680) {
+        const bw = 110 + pseudo(bx) * 90;
+        ctx.beginPath();
+        ctx.moveTo(bx, -200);
+        ctx.lineTo(bx + bw, -200);
+        ctx.lineTo(bx + bw + 320, levelHeight);
+        ctx.lineTo(bx + 240, levelHeight);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // 4. Embedded Glowing Crystals on the cave walls
+    const crystalColor = theme === 'lush' ? '#2ee59d' : (theme === 'muddy' ? '#ff9f43' : '#a55eea');
+    for (let cx = 180; cx < levelWidth - 180; cx += 240) {
+        const cy = 220 + pseudo(cx * 1.9) * (levelHeight - 520);
+        const cr = 16 + pseudo(cx * 3.1) * 16;
+        const ang = (pseudo(cx * 7.3) - 0.5) * 1.2;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(ang);
+
+        const halo = ctx.createRadialGradient(0, 0, 2, 0, 0, cr * 2.5);
+        halo.addColorStop(0, crystalColor + '33');
+        halo.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(0, 0, cr * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = crystalColor;
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        ctx.moveTo(0, -cr);
+        ctx.lineTo(cr * 0.35, 0);
+        ctx.lineTo(0, cr * 0.4);
+        ctx.lineTo(-cr * 0.35, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = 0.45;
+        ctx.beginPath();
+        ctx.moveTo(0, -cr);
+        ctx.lineTo(cr * 0.15, 0);
+        ctx.lineTo(0, cr * 0.2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // 5. Jagged Cave Ceiling Stalactites along the top border
+    ctx.fillStyle = '#05070b';
+    ctx.beginPath();
+    ctx.moveTo(0, -500);
+    ctx.lineTo(levelWidth, -500);
+    for (let sx = levelWidth; sx >= 0; sx -= 28) {
+        const spikeLen = 35 + pseudo(sx * 0.41) * 95 + (sx % 112 === 0 ? 75 : 0);
+        ctx.lineTo(sx, spikeLen);
+    }
+    ctx.closePath();
+    ctx.fill();
 }
 
 function drawPlatform(plat) {
@@ -7998,79 +8188,65 @@ function drawPlatform(plat) {
     const y = plat.y;
     const w = plat.w;
     const h = plat.h;
-    const isGround = h > 80; // Distinguishes thick floor slabs from floating ledges
+    const isGround = h > 80;
     const seed = x * 0.13 + y * 0.37;
 
-    // ============================================================
-    // FORCE ALL MOVING PLATFORMS TO ALWAYS BE THE WOODEN BRIDGE DESIGN
-    // ============================================================
-    if (plat.vx !== undefined && plat.minX !== undefined) {
-        // Support beams underneath
-        ctx.fillStyle = '#1a0f08';
-        ctx.fillRect(x + 4, y + 10, w - 8, h - 10);
+    // 1. Moving Platforms & Wooden Bridges
+    if ((plat.vx !== undefined && plat.minX !== undefined) || (currentLevel <= 2 && plat.type === 'wood')) {
+        ctx.fillStyle = '#140b06';
+        ctx.fillRect(x + 4, y + 11, w - 8, h - 11);
 
-        // Cross-bracing struts
-        ctx.strokeStyle = '#2b190e';
-        ctx.lineWidth = 4;
-        for (let sx = x + 10; sx < x + w - 24; sx += 32) {
+        ctx.strokeStyle = '#2d190e';
+        ctx.lineWidth = 3.5;
+        for (let sx = x + 8; sx < x + w - 22; sx += 28) {
             ctx.beginPath();
-            ctx.moveTo(sx, y + 10);
-            ctx.lineTo(sx + 24, y + h - 2);
-            ctx.moveTo(sx + 24, y + 10);
+            ctx.moveTo(sx, y + 11);
+            ctx.lineTo(sx + 20, y + h - 2);
+            ctx.moveTo(sx + 20, y + 11);
             ctx.lineTo(sx, y + h - 2);
             ctx.stroke();
         }
 
-        // Individual rounded wooden logs along the top deck
-        const plankW = 16;
+        const plankW = 18;
         for (let px = x; px < x + w; px += plankW) {
             const pw = Math.min(plankW - 2, x + w - px);
-            // Log base
-            ctx.fillStyle = '#4a2c18';
-            ctx.fillRect(px, y, pw, 14);
-            // Bark top highlight
-            ctx.fillStyle = '#6e4427';
+            ctx.fillStyle = '#52301a';
+            ctx.fillRect(px, y, pw, 13);
+            ctx.fillStyle = '#784a2a';
             ctx.fillRect(px + 1, y + 1, pw - 2, 4);
-            // Wood grain shadow
-            ctx.fillStyle = '#2e1a0d';
-            ctx.fillRect(px, y + 11, pw, 3);
-            // Iron nail
-            ctx.fillStyle = '#8d99ae';
+            ctx.fillStyle = '#2e190c';
+            ctx.fillRect(px, y + 10, pw, 3);
+            ctx.fillStyle = '#94a3b8';
             ctx.fillRect(px + 3, y + 5, 2, 2);
+            ctx.fillRect(px + pw - 5, y + 5, 2, 2);
         }
 
-        // Rope lashing & creeping moss on the wood
-        ctx.fillStyle = '#2d6a4f';
-        for (let mx = x + 12; mx < x + w - 16; mx += 42) {
-            ctx.beginPath();
-            ctx.arc(mx, y + 2, 5, 0, Math.PI);
-            ctx.fill();
+        if (plat.vx !== undefined) {
+            const glowCol = '#00f0ff';
+            ctx.fillStyle = glowCol;
+            ctx.shadowColor = glowCol;
+            ctx.shadowBlur = 8;
+            ctx.fillRect(x + 8, y + h - 5, 14, 3);
+            ctx.fillRect(x + w - 22, y + h - 5, 14, 3);
+            ctx.shadowBlur = 0;
         }
-
-        // Outline border
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, w, h);
-
         ctx.restore();
         return;
     }
 
-    // Helper: Draws an organic, jagged rock slab instead of a flat rectangle
-    function drawCraggyBody(baseCol, midCol, darkCol) {
+    // Helper: Sculpted cave rock body with natural edges
+    function drawSculptedRock(baseCol, midCol, darkCol, rimCol) {
         ctx.fillStyle = darkCol;
         ctx.beginPath();
-        ctx.moveTo(x, y + 6);
-        ctx.lineTo(x + w, y + 6);
+        ctx.moveTo(x - 2, y + 5);
+        ctx.lineTo(x + w + 2, y + 5);
+        ctx.lineTo(x + w + 3, y + h * 0.45);
+        ctx.lineTo(x + w - 3, y + h - 4);
 
-        // Right edge bevel
-        ctx.lineTo(x + w - 2, y + h - 4);
-
-        // Bottom edge: craggy teeth for floating platforms, solid for main floor
         if (!isGround) {
-            const step = 18;
+            const step = 16;
             for (let bx = x + w - step; bx > x + step; bx -= step) {
-                const jag = (pseudo(bx * 0.25 + seed) * 10) - 3;
+                const jag = (pseudo(bx * 0.25 + seed) * 12) - 2;
                 ctx.lineTo(bx, y + h + jag);
             }
         } else {
@@ -8078,204 +8254,151 @@ function drawPlatform(plat) {
             ctx.lineTo(x, y + h);
         }
 
-        // Left edge bevel
-        ctx.lineTo(x + 2, y + h - 4);
+        ctx.lineTo(x + 3, y + h - 4);
+        ctx.lineTo(x - 3, y + h * 0.45);
         ctx.closePath();
         ctx.fill();
 
-        // Inner rock face shading (3D depth layer)
-        ctx.fillStyle = baseCol;
-        ctx.fillRect(x + 3, y + 8, w - 6, h - 14);
-
-        // Stepped rock strata & stone blocks
-        ctx.fillStyle = midCol;
-        for (let rx = x + 8; rx < x + w - 28; rx += 34) {
-            const blockW = 20 + Math.floor(pseudo(rx + seed) * 12);
-            const blockH = Math.min(h - 18, 12 + Math.floor(pseudo(rx * 2) * 16));
-            const by = y + 10 + Math.floor(pseudo(rx * 3) * Math.max(2, Math.min(30, h - 28)));
-            ctx.fillRect(rx, by, blockW, blockH);
-
-            // Top bevel highlight on each stone chunk
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.fillRect(rx, by, blockW, 2);
-            ctx.fillStyle = midCol;
-        }
-
-        // Deep vertical rock fissures
-        ctx.strokeStyle = '#05070a';
-        ctx.lineWidth = 2;
-        for (let cx = x + 22; cx < x + w - 20; cx += 48) {
-            if (pseudo(cx + seed) > 0.35) {
-                const crackLen = Math.min(h - 14, 16 + pseudo(cx * 1.7) * 28);
-                ctx.beginPath();
-                ctx.moveTo(cx, y + 8);
-                ctx.lineTo(cx + (pseudo(cx) > 0.5 ? 5 : -5), y + 8 + crackLen * 0.5);
-                ctx.lineTo(cx + (pseudo(cx) > 0.5 ? 2 : -2), y + 8 + crackLen);
-                ctx.stroke();
-            }
-        }
-
-        // Outer craggy contour outline (replaces the flat box strokeRect)
         ctx.strokeStyle = '#040508';
         ctx.lineWidth = 2.5;
-        ctx.strokeRect(x + 1, y + 5, w - 2, h - 7);
-    }
+        ctx.stroke();
 
-    // ============================================================
-    // LEVELS 1 & 2: LUSH BIO-CAVERNS ('grass' & 'wood')
-    // ============================================================
-    if (currentLevel <= 2) {
-        if (plat.type === 'wood') {
-            // --- SUSPENDED TIMBER & ROPE BRIDGE ---
-            // Support beams underneath
-            ctx.fillStyle = '#1a0f08';
-            ctx.fillRect(x + 4, y + 10, w - 8, h - 10);
+        ctx.fillStyle = baseCol;
+        ctx.beginPath();
+        ctx.moveTo(x + 3, y + 7);
+        ctx.lineTo(x + w - 3, y + 7);
+        ctx.lineTo(x + w - 6, y + h - 6);
+        ctx.lineTo(x + 6, y + h - 6);
+        ctx.closePath();
+        ctx.fill();
 
-            // Cross-bracing struts
-            ctx.strokeStyle = '#2b190e';
-            ctx.lineWidth = 4;
-            for (let sx = x + 10; sx < x + w - 24; sx += 32) {
+        for (let rx = x + 8; rx < x + w - 26; rx += 30) {
+            const bw = 18 + Math.floor(pseudo(rx + seed) * 14);
+            const bh = Math.min(h - 16, 10 + Math.floor(pseudo(rx * 2.1) * 18));
+            const by = y + 9 + Math.floor(pseudo(rx * 3.3) * Math.max(2, Math.min(36, h - 26)));
+
+            ctx.fillStyle = midCol;
+            ctx.beginPath();
+            ctx.moveTo(rx, by);
+            ctx.lineTo(rx + bw, by + 2);
+            ctx.lineTo(rx + bw - 3, by + bh);
+            ctx.lineTo(rx + 2, by + bh - 2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = rimCol;
+            ctx.fillRect(rx + 2, by, bw - 5, 2);
+        }
+
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.lineWidth = 2;
+        for (let cx = x + 20; cx < x + w - 20; cx += 44) {
+            if (pseudo(cx + seed) > 0.35) {
+                const crackLen = Math.min(h - 12, 14 + pseudo(cx * 1.7) * 30);
                 ctx.beginPath();
-                ctx.moveTo(sx, y + 10);
-                ctx.lineTo(sx + 24, y + h - 2);
-                ctx.moveTo(sx + 24, y + 10);
-                ctx.lineTo(sx, y + h - 2);
+                ctx.moveTo(cx, y + 7);
+                ctx.lineTo(cx + (pseudo(cx) > 0.5 ? 5 : -5), y + 7 + crackLen * 0.5);
+                ctx.lineTo(cx + (pseudo(cx) > 0.5 ? 2 : -2), y + 7 + crackLen);
                 ctx.stroke();
             }
+        }
+    }
 
-            // Individual rounded wooden logs along the top deck
-            const plankW = 16;
-            for (let px = x; px < x + w; px += plankW) {
-                const pw = Math.min(plankW - 2, x + w - px);
-                // Log base
-                ctx.fillStyle = '#4a2c18';
-                ctx.fillRect(px, y, pw, 14);
-                // Bark top highlight
-                ctx.fillStyle = '#6e4427';
-                ctx.fillRect(px + 1, y + 1, pw - 2, 4);
-                // Wood grain shadow
-                ctx.fillStyle = '#2e1a0d';
-                ctx.fillRect(px, y + 11, pw, 3);
-                // Iron nail
-                ctx.fillStyle = '#8d99ae';
-                ctx.fillRect(px + 3, y + 5, 2, 2);
-            }
+    // 2. Levels 1 & 2: Lush Cavern Rock
+    if (currentLevel <= 2) {
+        drawSculptedRock('#111d18', '#1a2c24', '#080f0c', 'rgba(82, 183, 136, 0.14)');
 
-            // Rope lashing & creeping moss on the wood
-            ctx.fillStyle = '#2d6a4f';
-            for (let mx = x + 12; mx < x + w - 16; mx += 42) {
+        ctx.fillStyle = '#1b4332';
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y + 2);
+        ctx.lineTo(x + w + 4, y + 2);
+        for (let mx = x + w + 2; mx >= x - 2; mx -= 9) {
+            const drape = 9 + Math.sin(mx * 0.17 + seed) * 4.5;
+            ctx.lineTo(mx, y + drape);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#2d6a4f';
+        ctx.beginPath();
+        ctx.moveTo(x - 3, y);
+        ctx.lineTo(x + w + 3, y);
+        for (let mx = x + w; mx >= x; mx -= 11) {
+            const drape = 5 + Math.cos(mx * 0.22 + seed) * 2.5;
+            ctx.lineTo(mx, y + drape);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#52b788';
+        ctx.fillRect(x - 1, y, w + 2, 2.5);
+        ctx.fillStyle = '#95d5b2';
+        ctx.fillRect(x + 4, y, w - 8, 1);
+
+        for (let gx = x + 10; gx < x + w - 10; gx += 16) {
+            const r = pseudo(gx + seed);
+            if (r > 0.35) {
+                ctx.fillStyle = '#40916c';
                 ctx.beginPath();
-                ctx.arc(mx, y + 2, 5, 0, Math.PI);
+                ctx.moveTo(gx, y);
+                ctx.lineTo(gx - 3, y - 5);
+                ctx.lineTo(gx + 2, y);
                 ctx.fill();
             }
-        } else {
-            // --- OVERGROWN LUSH CAVERN ROCK ---
-            drawCraggyBody('#111d16', '#192b21', '#09100c');
-
-            // Thick, uneven hanging moss blanket along the top edge
-            ctx.fillStyle = '#1b4332';
-            ctx.beginPath();
-            ctx.moveTo(x - 3, y);
-            ctx.lineTo(x + w + 3, y);
-            for (let mx = x + w; mx >= x; mx -= 10) {
-                const drape = 9 + Math.sin(mx * 0.15 + seed) * 4;
-                ctx.lineTo(mx, y + drape);
+            if (r > 0.76) {
+                ctx.fillStyle = '#74c69d';
+                ctx.fillRect(gx + 3, y - 4, 2, 4);
+                ctx.fillStyle = '#d8f3dc';
+                ctx.shadowColor = '#52b788';
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                ctx.arc(gx + 4, y - 5, 3, Math.PI, 0);
+                ctx.fill();
+                ctx.shadowBlur = 0;
             }
-            ctx.closePath();
-            ctx.fill();
+        }
 
-            // Mid-tone lush turf layer
-            ctx.fillStyle = '#2d6a4f';
-            ctx.beginPath();
-            ctx.moveTo(x - 2, y);
-            ctx.lineTo(x + w + 2, y);
-            for (let mx = x + w; mx >= x; mx -= 12) {
-                const drape = 5 + Math.cos(mx * 0.2 + seed) * 2.5;
-                ctx.lineTo(mx, y + drape);
-            }
-            ctx.closePath();
-            ctx.fill();
-
-            // Bioluminescent top rim & grass blades
-            ctx.fillStyle = '#52b788';
-            ctx.fillRect(x, y, w, 2);
-
-            for (let gx = x + 8; gx < x + w - 8; gx += 14) {
-                const r = pseudo(gx + seed);
-                if (r > 0.35) {
-                    // Grass tufts
-                    ctx.fillStyle = '#40916c';
+        if (!isGround) {
+            for (let vx = x + 14; vx < x + w - 14; vx += 32) {
+                if (pseudo(vx * 1.3 + seed) > 0.38) {
+                    const vLen = 14 + pseudo(vx) * 24;
+                    ctx.strokeStyle = '#1b4332';
+                    ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.moveTo(gx, y);
-                    ctx.lineTo(gx - 3, y - 6);
-                    ctx.lineTo(gx + 2, y);
-                    ctx.fill();
-                }
-                if (r > 0.78) {
-                    // Tiny glowing cave spore
-                    ctx.fillStyle = '#74c69d';
-                    ctx.fillRect(gx + 3, y - 4, 2, 4);
-                    ctx.fillStyle = '#b7e4c7';
-                    ctx.shadowColor = '#52b788';
-                    ctx.shadowBlur = 6;
-                    ctx.beginPath();
-                    ctx.arc(gx + 4, y - 5, 3, Math.PI, 0);
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
-            }
+                    ctx.moveTo(vx, y + h - 2);
+                    ctx.quadraticCurveTo(vx + 4, y + h + vLen * 0.5, vx - 2, y + h + vLen);
+                    ctx.stroke();
 
-            // Hanging vines below floating ledges
-            if (!isGround) {
-                for (let vx = x + 16; vx < x + w - 16; vx += 36) {
-                    if (pseudo(vx * 1.3 + seed) > 0.4) {
-                        const vLen = 12 + pseudo(vx) * 22;
-                        ctx.strokeStyle = '#1b4332';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(vx, y + h - 2);
-                        ctx.quadraticCurveTo(vx + 4, y + h + vLen * 0.5, vx - 2, y + h + vLen);
-                        ctx.stroke();
-
-                        // Glowing vine leaf tip
-                        ctx.fillStyle = '#52b788';
-                        ctx.fillRect(vx - 3, y + h + vLen - 2, 3, 3);
-                    }
+                    ctx.fillStyle = '#52b788';
+                    ctx.fillRect(vx - 3, y + h + vLen - 2, 3, 3);
                 }
             }
         }
 
-    // ============================================================
-    // LEVELS 3 & 4: MUDDY FOSSIL DEPTHS ('mud' & 'clay')
-    // ============================================================
+    // 3. Levels 3 & 4: Muddy Fossil & Amber Caverns
     } else if (currentLevel <= 4) {
         if (plat.type === 'clay') {
-            // --- CARVED ANCIENT CLAY BRICK LEDGE ---
-            drawCraggyBody('#3d2314', '#52301c', '#211109');
+            drawSculptedRock('#382012', '#4d2d1a', '#1c0f08', 'rgba(255, 175, 95, 0.14)');
 
-            // Chiseled brickcourses along the platform
-            ctx.strokeStyle = '#1a0d06';
-            ctx.lineWidth = 2;
             const brickW = 28;
             for (let bx = x; bx < x + w; bx += brickW) {
                 const bw = Math.min(brickW, x + w - bx);
                 ctx.fillStyle = (Math.floor(bx / brickW) % 2 === 0) ? '#5c3822' : '#4d2e1b';
                 ctx.fillRect(bx + 1, y, bw - 2, 11);
+                ctx.strokeStyle = '#1a0d06';
+                ctx.lineWidth = 1.8;
                 ctx.strokeRect(bx + 1, y, bw - 2, 11);
 
-                // Warm terracotta rim highlight
-                ctx.fillStyle = '#7f4f24';
+                ctx.fillStyle = '#9c6644';
                 ctx.fillRect(bx + 2, y + 1, bw - 4, 2);
             }
         } else {
-            // --- DRIPPING SLUDGE & CRAGGY SHALE ---
-            drawCraggyBody('#1f140e', '#2e1f16', '#120b07');
+            drawSculptedRock('#21150e', '#302016', '#110a06', 'rgba(212, 163, 115, 0.12)');
 
-            // Thick, glossy wet mud cap oozing over the top edge
-            ctx.fillStyle = '#3b2818';
+            ctx.fillStyle = '#3d291a';
             ctx.beginPath();
-            ctx.moveTo(x - 2, y);
-            ctx.lineTo(x + w + 2, y);
+            ctx.moveTo(x - 3, y + 1);
+            ctx.lineTo(x + w + 3, y + 1);
             for (let mx = x + w; mx >= x; mx -= 10) {
                 const drip = 8 + Math.sin(mx * 0.22 + seed) * 4;
                 ctx.lineTo(mx, y + drip);
@@ -8283,28 +8406,30 @@ function drawPlatform(plat) {
             ctx.closePath();
             ctx.fill();
 
-            // Lighter wet sheen along the top surface
-            ctx.fillStyle = '#583e26';
-            ctx.fillRect(x, y, w, 4);
-            ctx.fillStyle = '#7f5539';
-            ctx.fillRect(x + 2, y, w - 4, 1.5);
+            ctx.fillStyle = '#6c4931';
+            ctx.fillRect(x, y, w, 3.5);
+            ctx.fillStyle = '#a98467';
+            ctx.fillRect(x + 3, y, w - 6, 1.5);
 
-            // Embedded fossilized stones & bone fragments
-            for (let sx = x + 14; sx < x + w - 18; sx += 44) {
-                if (pseudo(sx + seed) > 0.3) {
-                    ctx.fillStyle = '#6c757d';
+            for (let sx = x + 16; sx < x + w - 18; sx += 42) {
+                if (pseudo(sx + seed) > 0.35) {
+                    ctx.fillStyle = '#ff9f1c';
+                    ctx.shadowColor = '#ff9f1c';
+                    ctx.shadowBlur = 5;
                     ctx.beginPath();
-                    ctx.arc(sx, y + 14, 5, 0, Math.PI * 2);
+                    ctx.moveTo(sx, y + 11);
+                    ctx.lineTo(sx + 4, y + 15);
+                    ctx.lineTo(sx, y + 19);
+                    ctx.lineTo(sx - 4, y + 15);
+                    ctx.closePath();
                     ctx.fill();
-                    ctx.fillStyle = '#adb5bd';
-                    ctx.fillRect(sx - 2, y + 11, 3, 2);
+                    ctx.shadowBlur = 0;
                 }
             }
         }
 
-        // Sharp conical stalactites hanging underneath floating platforms
         if (!isGround) {
-            for (let dx = x + 12; dx < x + w - 16; dx += 26) {
+            for (let dx = x + 12; dx < x + w - 16; dx += 24) {
                 if (pseudo(dx + seed) > 0.25) {
                     const sLen = 12 + pseudo(dx * 2.1) * 18;
                     ctx.fillStyle = '#261810';
@@ -8314,30 +8439,16 @@ function drawPlatform(plat) {
                     ctx.lineTo(dx + 10, y + h - 3);
                     ctx.closePath();
                     ctx.fill();
-
-                    // Stalactite rim highlight
-                    ctx.fillStyle = '#4a3222';
-                    ctx.beginPath();
-                    ctx.moveTo(dx + 2, y + h - 3);
-                    ctx.lineTo(dx + 5, y + h + sLen);
-                    ctx.lineTo(dx + 6, y + h - 3);
-                    ctx.closePath();
-                    ctx.fill();
                 }
             }
         }
 
-    // ============================================================
-    // LEVEL 5 & BOSS: OBSIDIAN & INDUSTRIAL CORE ('iron', 'stone', 'rock')
-    // ============================================================
+    // 4. Level 5 & Boss Arena: Obsidian & Cyber-Steel
     } else {
         if (plat.type === 'iron') {
-            // --- ARMORED CYBER-STEEL GIRDER ---
-            // Dark recessed truss interior
             ctx.fillStyle = '#090c12';
             ctx.fillRect(x, y, w, h);
 
-            // Diagonal steel truss struts
             ctx.strokeStyle = '#1b2432';
             ctx.lineWidth = 3;
             for (let tx = x + 6; tx < x + w - 22; tx += 28) {
@@ -8349,45 +8460,24 @@ function drawPlatform(plat) {
                 ctx.stroke();
             }
 
-            // Heavy bolted armor plates on wider or taller blocks
-            for (let px = x + 8; px < x + w - 42; px += 48) {
-                ctx.fillStyle = '#161e2b';
-                ctx.fillRect(px, y + 7, 38, h - 14);
-                ctx.strokeStyle = '#2b374b';
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(px, y + 7, 38, h - 14);
-
-                // Glowing rivets
-                ctx.fillStyle = '#64748b';
-                ctx.fillRect(px + 3, y + 10, 2, 2);
-                ctx.fillRect(px + 33, y + 10, 2, 2);
-            }
-
-            // Top and bottom steel I-beam flanges
             ctx.fillStyle = '#334155';
             ctx.fillRect(x - 2, y, w + 4, 7);
             ctx.fillRect(x - 2, y + h - 6, w + 4, 6);
-
-            // Specular metallic edge highlight
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
             ctx.fillRect(x, y, w, 2);
 
-            // Neon cyan plasma conduit inlaid into the top rail
             ctx.fillStyle = '#00f0ff';
             ctx.shadowColor = '#00f0ff';
             ctx.shadowBlur = 10;
             ctx.fillRect(x + 4, y + 3, w - 8, 2);
             ctx.shadowBlur = 0;
-
         } else {
-            // --- JAGGED VOLCANIC OBSIDIAN & GLOWING ORE ('rock' & 'stone') ---
-            drawCraggyBody('#12151f', '#1c2230', '#080a0f');
+            drawSculptedRock('#11141f', '#1b2133', '#07090f', 'rgba(130, 150, 255, 0.14)');
 
-            // Craggy dark basalt cap with glowing crystal/circuit seams
-            ctx.fillStyle = '#262f40';
+            ctx.fillStyle = '#262f45';
             ctx.beginPath();
-            ctx.moveTo(x - 2, y);
-            ctx.lineTo(x + w + 2, y);
+            ctx.moveTo(x - 3, y);
+            ctx.lineTo(x + w + 3, y);
             for (let rx = x + w; rx >= x; rx -= 14) {
                 const jag = 6 + (pseudo(rx + seed) * 5);
                 ctx.lineTo(rx, y + jag);
@@ -8395,12 +8485,10 @@ function drawPlatform(plat) {
             ctx.closePath();
             ctx.fill();
 
-            // Sharp obsidian rim highlight
-            ctx.fillStyle = '#475569';
-            ctx.fillRect(x, y, w, 2);
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(x, y, w, 2.5);
 
-            // Embedded glowing crystal/energy veins in the rock face
-            for (let ox = x + 20; ox < x + w - 20; ox += 52) {
+            for (let ox = x + 20; ox < x + w - 20; ox += 48) {
                 if (pseudo(ox + seed) > 0.35) {
                     const glowCol = (plat.type === 'stone') ? '#b78cff' : '#00f0ff';
                     ctx.strokeStyle = glowCol;
@@ -8627,17 +8715,14 @@ function drawPlatform(plat) {
         const shakeY = screenShakeTimer > 0 ? (Math.random() - 0.5) * screenShakeMag * 2 : 0;
         ctx.translate(-Math.floor(camera.x - shakeX), -Math.floor(camera.y - shakeY));
 
+ // Clean, seamless parallax background layer
+      const parallaxX = Math.floor(camera.x * 0.4);
       ctx.drawImage(
-  bgCache,
-  camera.x,
-  camera.y + 500,
-  canvas.width,
-  canvas.height,
-  camera.x,
-  camera.y,
-  canvas.width,
-  canvas.height
-);
+        bgCache,
+        parallaxX, 500, canvas.width, canvas.height,
+        camera.x, camera.y, canvas.width, canvas.height
+      );
+
 
         platforms.forEach(plat => {
   if (
@@ -8996,13 +9081,33 @@ hitSparks.forEach(sparkGroup => {
             ctx.fillRect(-b.radius * 0.6, -b.radius * 0.35, b.radius * 1.9, b.radius * 0.7);
             ctx.shadowBlur = 0;
           } else {
-            // --- CHARGED SHOT: Massive Crimson-Gold Plasma Lance + Helix Wake ---
-            const tailLen = b.radius * 6.5;
+            // --- TIERED CHARGED SHOTS: Distinct visuals for Damage 2, 4, and 8 ---
+            const dmg = b.damage || 1;
+            const isMaxPower = dmg >= 8;
+            const isMidPower = dmg === 4;
+            
+            // Tail length scales with damage: 4.5x for Tier 2, 6.0x for Tier 4, 8.5x for Tier 8
+            const tailLen = b.radius * (isMaxPower ? 8.5 : (isMidPower ? 6.0 : 4.5));
+            
             const grad = ctx.createLinearGradient(-tailLen, 0, b.radius * 1.5, 0);
-            grad.addColorStop(0, 'rgba(255, 0, 0, 0)');
-            grad.addColorStop(0.35, '#ff1100');
-            grad.addColorStop(0.75, '#ffaa00');
-            grad.addColorStop(1, '#ffffff');
+            if (isMaxPower) {
+                // Tier 8: Crimson-Gold
+                grad.addColorStop(0, 'rgba(255, 0, 0, 0)');
+                grad.addColorStop(0.35, '#ffff00');
+                grad.addColorStop(0.75, '#ff3300');
+                grad.addColorStop(1, '#ffffff');
+            } else if (isMidPower) {
+                // Tier 4: Bright Electric Orange-Cyan
+                grad.addColorStop(0, 'rgba(0, 240, 255, 0)');
+                grad.addColorStop(0.4, '#ff6600');
+                grad.addColorStop(0.8, '#ffaa00');
+                grad.addColorStop(1, '#ffffff');
+            } else {
+                // Tier 2: Deep Blue-Violet
+                grad.addColorStop(0, 'rgba(100, 50, 255, 0)');
+                grad.addColorStop(0.5, '#7b2cbf');
+                grad.addColorStop(1, '#c77dff');
+            }
 
             // Heavy plasma wake cone
             ctx.fillStyle = grad;
@@ -9188,6 +9293,18 @@ if (player.dashActive) {
           ctx.restore();
         }
 		
+		// Visceral Screen Damage Flash when invulnerable from a hit
+        if (player.invulnTimer > 45) {
+            ctx.save();
+            const flashAlpha = (player.invulnTimer - 45) / 15; // Quick burst fade
+            const redVignette = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.height * 0.3, canvas.width / 2, canvas.height / 2, canvas.height * 0.75);
+            redVignette.addColorStop(0, 'rgba(255, 0, 0, 0)');
+            redVignette.addColorStop(1, `rgba(220, 10, 10, ${flashAlpha * 0.55})`);
+            ctx.fillStyle = redVignette;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        }
+		
         // ============================================================
         // POLISHED SCI-FI ENERGY HEALTH BAR
         // ============================================================
@@ -9335,7 +9452,52 @@ if (player.dashActive) {
           }
         }
       }
+	  // Cinematic Boss Intro Banner (Aggressive Shake & Fast Fade)
+        if (bossBannerTimer > 0) {
+            bossBannerTimer--;
+            ctx.save();
+            
+            // Failsafe alpha calculation so it starts fast and fades out cleanly without freezing
+            let animAlpha = bossBannerTimer > 55 ? 1 : (bossBannerTimer / 55);
 
+            // Violent jitter/glitch shaking throughout its entire short lifespan
+            const jitterX = (Math.random() - 0.5) * 18;
+            const jitterY = (Math.random() - 0.5) * 8;
+
+            ctx.save();
+            ctx.globalAlpha = animAlpha;
+            ctx.translate(canvas.width / 2 + jitterX, canvas.height / 2 + jitterY);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Top Warning Banner Line
+            ctx.font = 'bold 14px "Press Start 2P"';
+            ctx.fillStyle = '#ff3311';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 12;
+            ctx.fillText('⚠ CONTAINER BREACH // DESIGNATED TARGET ⚠', 0, -42);
+
+            // Giant Boss Name ("CHUPITRON" or "ZAM")
+            const isZam = (boss && boss.type === 'zam');
+            const bossTitle = isZam ? 'ZAM' : 'CHUPITRON';
+            
+            ctx.font = 'bold 64px "Press Start 2P"';
+            ctx.fillStyle = isZam ? '#ff0055' : '#ff1111';
+            ctx.shadowColor = isZam ? '#ff0055' : '#ff0000';
+            ctx.shadowBlur = 28;
+            ctx.fillText(bossTitle, 0, 10);
+
+            // Terrifying Subtitle Mandate
+            ctx.font = 'bold 12px "Press Start 2P"';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = 8;
+            ctx.fillText('NO ESCAPE. SURVIVE OR TERMINATE.', 0, 58);
+
+            ctx.restore();
+            ctx.restore();
+        }
+		
       if (fadeAlpha > 0) {
         ctx.fillStyle = `rgba(0, 0, 0, ${fadeAlpha})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
