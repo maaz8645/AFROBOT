@@ -26,6 +26,12 @@
       justify-content: center;
       overflow: hidden;
     }
+	.settings-menu-btn {
+      min-width: 240px !important;
+      padding: 8px 16px !important;
+      font-size: 0.85rem !important;
+      margin-bottom: 8px !important;
+    }
 
     #game-container {
       position: relative;
@@ -62,11 +68,13 @@
       transition: opacity 0.22s ease, transform 0.22s ease;
     }
 	
-    #home-screen,
+#home-screen,
     #achievements-screen,
     #settings-screen,
     #controls-screen,
-    #mode-screen {
+    #faq-screen,
+    #mode-screen,
+    #difficulty-screen {
       background:
         linear-gradient(rgba(13, 10, 26, 0.65), rgba(13, 10, 26, 0.75)),
         url('homescreen-bg.png') center center / cover no-repeat;
@@ -123,6 +131,50 @@
       border: 3px solid #ff3311 !important;
       color: #ff5533 !important;
       box-shadow: 6px 6px 0px #0a0505, inset 0 3px 0 rgba(255, 51, 17, 0.2);
+    }
+	
+	/* Large Split Menu Button (Story Mode / Core Defense) */
+    .btn-split {
+  min-width: 380px !important;
+  padding: 32px 28px !important;
+  font-size: 1.35rem !important;
+  background-color: #1a1515 !important;
+  border: 3px solid #ff3311 !important;
+  color: #ff5533 !important;
+  box-shadow: 6px 6px 0px #0a0505, inset 0 3px 0 rgba(255, 51, 17, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+    .btn-split:hover {
+      background-color: #2b1f1f !important;
+      border-color: #ff5533 !important;
+      color: #ff8866 !important;
+      transform: translate(-3px, -3px);
+      box-shadow: 9px 9px 0px #0a0505, 0 0 16px rgba(255, 51, 17, 0.4);
+    }
+
+    .btn-split:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #0a0505;
+    }
+
+.btn-split {
+  position: relative;
+}
+
+
+    .btn-subtext {
+      font-size: 0.65rem;
+      color: #9999a3;
+      letter-spacing: 1px;
+    }
+
+    .btn-split:hover .btn-subtext {
+      color: #ffaa88;
     }
 
     #start-btn:hover {
@@ -771,8 +823,9 @@
           <button class="toggle-switch" data-setting="saves">ON</button>
         </div>
       </div>
-      <button id="controls-btn" class="btn" style="margin-bottom: 20px; background-color: #1a6b8c;">CONTROLS</button>
-      <button id="settings-back-btn" class="btn">BACK</button>
+	  <button id="controls-btn" class="btn settings-menu-btn" style="background-color: #0b131a !important; border: 2px solid #00f0ff !important; color: #00f0ff !important;">CONTROLS</button>
+      <button id="faq-btn" class="btn settings-menu-btn" style="background-color: #0b131a !important; border: 2px solid #00f0ff !important; color: #00f0ff !important;">FAQ</button>
+      <button id="settings-back-btn" class="btn settings-menu-btn" style="background-color: #151821 !important; border: 2px solid #8b9bb4 !important; color: #b0c4de !important;">BACK</button>
     </div>
 	
 	    <!-- Controls Screen -->
@@ -786,6 +839,40 @@
       <button id="controls-back-btn" class="btn" style="margin-top: 30px;">BACK</button>
     </div>
 	
+	<!-- FAQ Screen -->
+    <div id="faq-screen" class="overlay hidden">
+      <h1 class="title-red" style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 20px;">FAQ</h1>
+      <div class="faq-scroll" style="max-width: 750px; width: 90%; max-height: 55vh; overflow-y: auto; margin-bottom: 25px; padding-right: 10px; scrollbar-width: thin; scrollbar-color: #00f0ff #15151c;">
+        
+        <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
+          <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">How do I use charge shots, and what are the different tiers?</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Hold down the [J] or [C] key to charge your weapon. Letting go early fires tiered charged shots (Damage 2 or 4), while holding it until the charge spark and audio cue trigger gives you a powerful 8-damage max charge shot with screen shake and recoil.</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
+          <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">Why isn't my dash working immediately when I press Shift?</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Holding [SHIFT] + [A/D] charges up a high-speed cyber dash for about 1.2 seconds. Changing directions while holding Shift won't cancel your charge, but you must keep holding until the burst triggers automatically.</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
+          <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">I messed up my speedrun time. Can I restart quickly?</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Yes! If you are playing in Speedrun Mode, you can press [R] at any time to instantly reset your run back to Level 1.</div>
+        </div>
+		
+		 <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
+          <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">Why do tarantulas have 1 health?</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Because they are ugly.</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); border: 2px solid #ffcc33; padding: 16px; margin-bottom: 10px; text-align: left;">
+          <div style="color: #ffcc33; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">??? Achievement</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Bother him... a lot...</div>
+        </div>
+
+      </div>
+      <button id="faq-back-btn" class="btn settings-menu-btn" style="background-color: #191b22 !important; border: 3px solid #8b9bb4 !important; color: #b0c4de !important;">BACK</button>
+    </div>
+	
 	    <!-- Intro Letter Screen -->
     <div id="intro-screen" class="overlay hidden">
       <div class="intro-box">
@@ -797,8 +884,30 @@
       </div>
     </div>
 
-    <!-- Mode Select Screen -->
+<!-- Mode Select Screen -->
     <div id="mode-screen" class="overlay hidden">
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px; margin-top: -10px;">
+        
+        <!-- Main Game (Large Upper Button) -->
+        <button id="story-mode-hub-btn" class="btn btn-split" style="min-width: 580px !important; padding: 50px 40px !important; font-size: 2.1rem !important;">
+          STORY MODE
+        </button>
+        
+        <!-- Sub-Game (Smaller Lower Button) -->
+        <button id="core-defense-btn" class="btn btn-split" style="min-width: 460px !important; padding: 34px 32px !important; font-size: 1.5rem !important; border-color: #00f0ff !important; color: #66f7ff !important;">
+          CORE DEFENSE
+        </button>
+
+      </div>
+
+      <button id="mode-back-btn" class="btn" style="position: absolute; bottom: 30px; padding: 12px 32px; font-size: 1.2rem; min-width: 200px;">BACK</button>
+      
+      <!-- Bottom Yellow Hover Text Container -->
+      <div id="mode-subtext" class="mode-desc-bottom" style="bottom: 100px !important;"></div>
+    </div>
+
+    <!-- Difficulty Select Sub-Screen (Opens when clicking Story Mode) -->
+    <div id="difficulty-screen" class="overlay hidden">
       <h1 class="title-red" style="font-size: clamp(2rem, 6vw, 4rem);">SELECT MODE</h1>
       <div class="mode-btn-row">
         <button id="normal-mode-btn" class="btn" data-desc="Recommended for first time players.">NORMAL MODE</button>
@@ -809,7 +918,7 @@
       <div class="mode-btn-row">
         <button id="speedrun-mode-btn" class="btn" style="background-color: #1a6b8c;" data-desc="This is just normal mode but you will be timed!">SPEEDRUN</button>
       </div>
-      <button id="mode-back-btn" class="btn" style="position: absolute; bottom: 20px; padding: 10px 28px; font-size: 1.2rem;">BACK</button>
+      <button id="diff-back-btn" class="btn" style="position: absolute; bottom: 20px; padding: 10px 28px; font-size: 1.2rem;">BACK</button>
       <div id="mode-desc" class="mode-desc-bottom"></div>
     </div>
 
@@ -842,13 +951,22 @@
         const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
+	
+	const faqScreen = document.getElementById('faq-screen');
+    const faqBtn = document.getElementById('faq-btn');
+    const faqBackBtn = document.getElementById('faq-back-btn');
+	
+	const storyModeHubBtn = document.getElementById('story-mode-hub-btn');
+    const coreDefenseBtn = document.getElementById('core-defense-btn');
+    const difficultyScreen = document.getElementById('difficulty-screen');
+    const diffBackBtn = document.getElementById('diff-back-btn');
 
     const bgCache = document.createElement('canvas');
     const bgCacheCtx = bgCache.getContext('2d');
 
-    function cacheBackground() {
-      const refWidth = isZamCorridor ? 5200 : ((isBossRoom) ? 4200 : camera.worldWidth);
-      const refHeight = (isBossRoom || isZamCorridor) ? 2200 : camera.worldHeight;
+	  function cacheBackground() {
+      const refWidth = isZamCorridor ? 5200 : ((isBossRoom) ? 4200 : (isDefenseMode ? 2400 : camera.worldWidth));
+      const refHeight = (isBossRoom || isZamCorridor) ? 2200 : (isDefenseMode ? 1200 : camera.worldHeight);
 
       bgCache.width = refWidth;
       bgCache.height = refHeight + 500;
@@ -1339,7 +1457,9 @@ const glitchChars = "█▓▒░#$%&?@!*<>~^";
   { id: 'a10', name: 'Overkill', desc: 'Kill 100 enemies.' },
   { id: 'a12', name: 'Charge Up', desc: 'Deal over 50% of your total damage to Chupitron using only charge shots.' },
   { id: 'a13', name: 'The Machine That Never Stopped', desc: 'Complete the entire game without standing still for more than 3 seconds at any point.' },
-  { id: 'a11', name: 'Impossible', desc: 'Beat the Zam Route in Hard Mode.', secret: true }
+  { id: 'a11', name: 'Impossible', desc: 'Beat the Zam Route in Hard Mode.', secret: true },
+  { id: 'a14', name: 'Proud Defender', desc: 'Conquer Core Defense.' },
+  { id: 'a15', name: 'Elite Defender', desc: 'Conquer Core Defense while holding 50 scrap or more.' }
 ];
 
     let achievements = {};
@@ -1444,6 +1564,14 @@ function switchScreen(hideEl, showEl, delay = 220) {
         achievementsBtn.addEventListener('click', () => {
       renderAchievementsList();
       switchScreen(homeScreen, achievementsScreen);
+    });
+	
+	faqBtn.addEventListener('click', () => {
+      switchScreen(settingsScreen, faqScreen);
+    });
+
+    faqBackBtn.addEventListener('click', () => {
+      switchScreen(faqScreen, settingsScreen);
     });
 
         achievementsBackBtn.addEventListener('click', () => {
@@ -1580,6 +1708,12 @@ let neverStoppedFailed = false;
     [normalModeBtn, hardModeBtn, speedrunModeBtn].forEach(btn => {
       btn.addEventListener('mouseenter', () => { modeDesc.textContent = btn.dataset.desc; });
       btn.addEventListener('mouseleave', () => { modeDesc.textContent = ''; });
+	  const modeSubtext = document.getElementById('mode-subtext');
+    storyModeHubBtn.addEventListener('mouseenter', () => { modeSubtext.textContent = "THE MAIN CAMPAIGN"; });
+    storyModeHubBtn.addEventListener('mouseleave', () => { modeSubtext.textContent = ''; });
+
+    coreDefenseBtn.addEventListener('mouseenter', () => { modeSubtext.textContent = "SURVIVAL WAVE MODE"; });
+    coreDefenseBtn.addEventListener('mouseleave', () => { modeSubtext.textContent = ''; });
     });
 
       const keys = {
@@ -1587,9 +1721,10 @@ let neverStoppedFailed = false;
       jumpHeld: false, jumpPressed: false,
       shootHeld: false,
       downPressed: false,
+      fPressed: false,
       shiftHeld: false,
-	  zHeld: false,
-	  escHeld: false
+      zHeld: false,
+      escHeld: false
     };
 
     window.addEventListener('keydown', (e) => {
@@ -1597,6 +1732,49 @@ let neverStoppedFailed = false;
 	  if (e.key === 'r' || e.key === 'R') {
         if (gameState === 'PLAYING' && gameMode === 'speedrun') {
           beginRun(); // Instantly restarts the speedrun from Level 1!
+        }
+      }
+	  if (isDefenseMode && defenseState === 'upgrade') {
+        if (e.key === '1') {
+          if (defenseUpgrades.overcharge) {
+            triggerNotification("ALREADY PURCHASED!");
+          } else if (defenseScrap >= 16) {
+            defenseScrap -= 16;
+            defenseUpgrades.overcharge = true;
+            player.bulletDamageBonus = (player.bulletDamageBonus || 0) + 1;
+            triggerNotification("WEAPON OVERCHARGE UNLOCKED!");
+            startDefenseWave(defenseWave + 1);
+          } else {
+            triggerNotification("NOT ENOUGH SCRAP (NEED 16)!");
+          }
+        } else if (e.key === '2') {
+          if (defenseUpgrades.tesla) {
+            triggerNotification("ALREADY PURCHASED!");
+          } else if (defenseScrap >= 8) {
+            defenseScrap -= 8;
+            defenseUpgrades.tesla = true;
+            player.speed = Math.min(9.5, player.speed + 0.6);
+            triggerNotification("TESLA BOOTS UNLOCKED!");
+            startDefenseWave(defenseWave + 1);
+          } else {
+            triggerNotification("NOT ENOUGH SCRAP (NEED 8)!");
+          }
+        } else if (e.key === '3') {
+          if (defenseUpgrades.repairDrones) {
+            triggerNotification("ALREADY PURCHASED!");
+          } else if (defenseScrap >= 12) {
+            defenseScrap -= 12;
+            defenseUpgrades.repairDrones = true;
+            if (defenseCore) defenseCore.hp = Math.min(defenseCore.maxHp, defenseCore.hp + 35);
+            player.hp = player.maxHp;
+            triggerNotification("CORE REPAIRED & DRONES UNLOCKED!");
+            startDefenseWave(defenseWave + 1);
+          } else {
+            triggerNotification("NOT ENOUGH SCRAP (NEED 12)!");
+          }
+        } else if (e.key === '4') {
+          triggerNotification("SKIPPED UPGRADE!");
+          startDefenseWave(defenseWave + 1);
         }
       }
       if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
@@ -1608,10 +1786,21 @@ let neverStoppedFailed = false;
         if (!keys.jumpHeld) keys.jumpPressed = true;
         keys.jumpHeld = true;
       }
-      if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
-        if (!keys.down) keys.downPressed = true;
-        keys.down = true;
-      }
+if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
+  if (isDefenseMode && !window.coreGameStarted) {
+    const coreCenterX = 720; // Center of the 100px wide core at x=670
+    const playerCenterX = player.x + player.width / 2;
+    const coreBottomY = 680; // Floor level
+    // Must be within 90px horizontally and 80px vertically while grounded
+    if (Math.abs(playerCenterX - coreCenterX) < 90 && Math.abs((player.y + player.height) - coreBottomY) < 80 && player.grounded) {
+      window.coreGameStarted = true;
+      startDefenseWave(1);
+      return;
+    }
+  }
+  if (!keys.down) keys.downPressed = true;
+  keys.down = true;
+}
             if (e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C') {
         if (gameState === 'PLAYING' && !keys.shootHeld) {
           keys.shootHeld = true;
@@ -1621,6 +1810,7 @@ let neverStoppedFailed = false;
       }
       if (e.key === 'Shift') keys.shiftHeld = true;
 	  if (e.key === 'z' || e.key === 'Z') keys.zHeld = true;
+	  if (e.key === 'f' || e.key === 'F') keys.fPressed = true;
 	  if (e.key === 'Escape') keys.escHeld = true;
 	  if (npcAwaitingChoice && npcDialogueOpen && npcDialogueRevealCount >= npcDialogueText.length) {
         if (e.key === 'y' || e.key === 'Y') {
@@ -1629,8 +1819,8 @@ let neverStoppedFailed = false;
           resolveZamChoice(false);
         }
       }
-      if (e.key === 'p' || e.key === 'P') {
-        if (gameState === 'PLAYING') {
+if (e.key === 'p' || e.key === 'P') {
+        if (gameState === 'PLAYING' && !isDefenseMode) {
           usedSkip = true;
           if (isBossRoom) {
             // Skip straight to victory
@@ -1664,6 +1854,7 @@ let neverStoppedFailed = false;
       }
       if (e.key === 'Shift') keys.shiftHeld = false;
 	  if (e.key === 'z' || e.key === 'Z') keys.zHeld = false;
+	  if (e.key === 'f' || e.key === 'F') keys.fPressed = false;
 	  if (e.key === 'Escape') keys.escHeld = false;
     });
 
@@ -1724,6 +1915,7 @@ let neverStoppedFailed = false;
 	let activeDialogueNpc = null;
     let keyItem = null;
     let lockedDoors = [];
+	let activeTerminal = { x: -9999, y: -9999, w: 50, h: 60, isOpen: false, message: "" };
 
     let camera = { x: 0, y: 0, worldWidth: 3200, worldHeight: 1800 };
     let bullets = [];
@@ -1801,6 +1993,192 @@ let neverStoppedFailed = false;
     let zamSpikeBalls = [];
     let zamGroundSpikes = [];
     let zamRainDrops = [];
+	
+	// ============================================================
+    // CORE DEFENSE STATE & MECHANICS
+    // ============================================================
+    let isDefenseMode = false;
+    let defenseCore = null;
+    let defenseWave = 1;
+    let defenseMaxWaves = 9;
+    let defenseScrap = 0;
+    let defenseSpawnQueue = 0;
+    let defenseSpawnTimer = 0;
+    let defenseState = 'wave'; // 'wave' | 'intermission' | 'upgrade'
+    let defenseIntermissionTimer = 0;
+    let defenseTurretPads = [];
+    let defenseDrops = [];
+    let defenseUpgrades = { overcharge: false, tesla: false, repairDrones: false };
+
+    function updateDefenseMusic(wave) {
+      if (!gameSettings.music) {
+        bgMusic.pause(); bgMusic34.pause(); stopLevel5Music();
+        return;
+      }
+      if (wave <= 3) {
+        bgMusic34.pause(); bgMusic34.currentTime = 0;
+        stopLevel5Music();
+        if (bgMusic.paused) { bgMusic.currentTime = 0; bgMusic.play().catch(() => {}); }
+      } else if (wave <= 6) {
+        bgMusic.pause(); bgMusic.currentTime = 0;
+        stopLevel5Music();
+        if (bgMusic34.paused) { bgMusic34.currentTime = 0; bgMusic34.play().catch(() => {}); }
+      } else {
+        bgMusic.pause(); bgMusic.currentTime = 0;
+        bgMusic34.pause(); bgMusic34.currentTime = 0;
+        playLevel5Music();
+      }
+    }
+
+    function loadCoreDefense() {
+      isDefenseMode = true;
+      isBossRoom = false;
+      isZamCorridor = false;
+      currentLevel = 5; // Uses Level 5's rocky/obsidian background & aesthetic!
+      bullets = []; enemies = []; movingPlatforms = []; upgradeSpheres = [];
+      structures = []; decorations = []; pressurePlates = []; lasers = [];
+      birdEnemies = []; droneEnemies = []; groundWaves = []; npcs = [];
+      npcDialogueOpen = false; jumpPads = []; keyItem = null; lockedDoors = [];
+      exitDoor = null; boss = null; heartItem = null;
+
+      camera.worldWidth = 1440;
+      camera.worldHeight = 810;
+      const floorY = 680;
+
+      player.x = 720 - player.width / 2;
+      player.y = floorY - player.height;
+      player.spawnX = player.x;
+      player.spawnY = player.y;
+      player.vx = 0; player.vy = 0;
+      player.hp = 5; player.maxHp = 5;
+
+      const ground = buildGroundBand(floorY, 1440, 0, 0);
+      groundSegs = [{ x: 0, y: floorY, w: 1440, h: 130, type: 'rock' }];
+      // 2-Floor Arena: Ground Floor (y=680) + Upper Catwalk Floor (y=470) with center drop-gap
+platforms = [
+        { x: 0, y: floorY, w: 1440, h: 130, type: 'rock' },
+        { x: 0, y: 470, w: 540, h: 28, type: 'iron' },
+        { x: 900, y: 470, w: 540, h: 28, type: 'iron' },
+        { x: 640, y: 535, w: 160, h: 22, type: 'stone' },
+        { x: 645, y: 310, w: 150, h: 24, type: 'iron' } // <-- Heal Station Platform
+      ];
+
+      // Removed edge jump pads!
+      jumpPads = [];
+
+      decorations = buildDecorations('rocky', 1440, groundSegs);
+      structures = [
+        { x: 20, y: floorY - 170, w: 110, h: 170, style: 'tower' },
+        { x: 1310, y: floorY - 170, w: 110, h: 170, style: 'tower' },
+        { x: 20, y: 470 - 140, w: 95, h: 140, style: 'tower' },
+        { x: 1325, y: 470 - 140, w: 95, h: 140, style: 'tower' }
+      ];
+
+      defenseCore = { x: 670, y: floorY - 125, w: 100, h: 125, hp: 100, maxHp: 100, repairTimer: 0 };
+      // 2 Turret pads on the 1st floor, 2 Tesla Trap pads on the 2nd floor catwalks!
+      defenseTurretPads = [
+        { x: 490, y: floorY - 36, w: 44, h: 36, side: 'left', active: false, timer: 0, fireCooldown: 0, cost: 10, kind: 'turret' },
+        { x: 906, y: floorY - 36, w: 44, h: 36, side: 'right', active: false, timer: 0, fireCooldown: 0, cost: 10, kind: 'turret' },
+        { x: 360, y: 470 - 12, w: 90, h: 12, active: false, timer: 0, zapCooldown: 0, cost: 5, kind: 'trap' },
+        { x: 990, y: 470 - 12, w: 90, h: 12, active: false, timer: 0, zapCooldown: 0, cost: 5, kind: 'trap' }
+      ];
+window.healStation = { x: 675, y: 270, w: 90, h: 40, cost: 12 };
+defenseWave = 1;
+      defenseScrap = 0;
+      defenseDrops = [];
+      defenseUpgrades = { overcharge: false, tesla: false, repairDrones: false };
+      
+      defenseState = 'wave';
+      window.coreGameStarted = false; // Waits for player to press S on the core!
+      cacheBackground();
+    }
+
+    function startDefenseWave(w) {
+      defenseWave = w;
+      defenseState = 'wave';
+      defenseSpawnQueue = 5 + w * 3; // Smooth, fair scaling (8 on Wave 1 -> 32 on Wave 9)
+      defenseSpawnTimer = 60;
+      
+      // Reset sniper cap counter for the new wave
+      window.maxSnipersThisWave = Math.min(3, 1 + Math.floor(w * 0.25));
+      window.snipersSpawnedThisWave = 0;
+
+      updateDefenseMusic(w);
+      if (defenseUpgrades.repairDrones && defenseCore) {
+        defenseCore.hp = Math.min(defenseCore.maxHp, defenseCore.hp + 35);
+        triggerNotification("WAVE " + w + " // +15% CORE REPAIRED!");
+      } else {
+        triggerNotification("WAVE " + w + " INCOMING!");
+      }
+    }
+
+    function spawnDefenseEnemy() {
+      const fromLeft = Math.random() < 0.5;
+      const onUpperFloor = Math.random() < 0.45; // 45% spawn on 2nd floor catwalk!
+      const spawnX = fromLeft ? 25 : 1375;
+      const floorY = onUpperFloor ? 470 : 680;
+      const roll = Math.random();
+
+      if (defenseWave === 1 || roll < 0.30) {
+        // Scrap Crawler (3 to 6 HP)
+        const hp = 3 + Math.floor(defenseWave * 0.4);
+        enemies.push({
+          type: 'crawler',
+          x: spawnX, y: floorY - 26, w: 36, h: 26,
+          vx: fromLeft ? (2.1 + defenseWave * 0.1) : -(2.1 + defenseWave * 0.1),
+          vy: 0, hp: hp, maxHp: hp, hitFlashTimer: 0
+        });
+      } else if (roll < 0.50) {
+        // Sapper Bot (3 to 5 HP)
+        const hp = 3 + Math.floor(defenseWave * 0.3);
+        enemies.push({
+          type: 'sapper',
+          x: spawnX, y: floorY - 22, w: 30, h: 22,
+          vx: fromLeft ? 3.1 : -3.1,
+          vy: 0, hp: hp, maxHp: hp, hitFlashTimer: 0
+        });
+      } else if (defenseWave >= 2 && roll < 0.68) {
+        // Explosive Drone (3 to 5 HP - dives from ceiling)
+        const hp = 3 + Math.floor(defenseWave * 0.3);
+        enemies.push({
+          type: 'exploder_drone',
+          x: 200 + Math.random() * 1040, y: -30, w: 42, h: 32,
+          vx: 0, vy: 1.2,
+          hp: hp, maxHp: hp, hitFlashTimer: 0
+        });
+      } else if (defenseWave >= 3 && roll < 0.82) {
+        // Shield Sentinel (6 to 10 HP)
+        const hp = 6 + Math.floor(defenseWave * 0.5);
+        enemies.push({
+          type: 'sentinel',
+          x: spawnX, y: floorY - 62, w: 46, h: 62,
+          vx: fromLeft ? 1.05 : -1.05,
+          facing: fromLeft ? 'right' : 'left',
+          vy: 0, hp: hp, maxHp: hp, hitFlashTimer: 0
+        });
+      } else if (defenseWave >= 4 && roll < 0.92 && (!window.snipersSpawnedThisWave || window.snipersSpawnedThisWave < window.maxSnipersThisWave)) {
+        // Hover Sniper (capped at max 3 per wave)
+        window.snipersSpawnedThisWave = (window.snipersSpawnedThisWave || 0) + 1;
+        const hp = 2 + Math.floor(defenseWave * 0.2);
+        enemies.push({
+          type: 'sniper_bot',
+          x: fromLeft ? 90 : 1310, y: 170 + Math.random() * 120, w: 44, h: 36,
+          vx: fromLeft ? 1.4 : -1.4, vy: 0,
+          originY: 200, shootTimer: 120,
+          hp: hp, maxHp: hp, hitFlashTimer: 0
+        });
+      } else {
+        // Juggernaut Mech / Fallback if sniper cap is reached
+        const hp = 14 + defenseWave;
+        enemies.push({
+          type: 'juggernaut',
+          x: spawnX, y: 680 - 78, w: 62, h: 78,
+          vx: fromLeft ? 0.7 : -0.7,
+          facing: fromLeft ? 'right' : 'left',
+          vy: 0, hp: hp, maxHp: hp, hitFlashTimer: 0
+        });
+      }
+    }
 
     // Synthesized Retro Achievement Chime (crisp 3-note arpeggio)
     function playAchievementJingle() {
@@ -1835,6 +2213,9 @@ let neverStoppedFailed = false;
     let popupTimer = null;
 
     function triggerNotification(text) {
+      // ONLY allow wave announcements to show text on screen
+      if (!text.includes("WAVE")) return;
+
       // Check if it's an achievement notification
       if (text.startsWith("ACHIEVEMENT UNLOCKED:")) {
         const actualName = text.replace("ACHIEVEMENT UNLOCKED: ", "");
@@ -1852,7 +2233,6 @@ let neverStoppedFailed = false;
         return;
       }
 
-      // Standard non-achievement notifications (like item pickups)
       notificationText = text;
       notificationTimer = 180;
     }
@@ -2188,6 +2568,7 @@ function createHitSpark(x, y, color = '#ff3333') {
     }
 
     function loadLevel(lvl) {
+	  isDefenseMode = false;
       currentLevel = lvl;
 	  levelStartTime = performance.now();
 	  updateLevelMusic(lvl);
@@ -2248,8 +2629,16 @@ function createHitSpark(x, y, color = '#ff3333') {
           { x: 2700, y: 1340, w: 300, h: 32, type: 'grass' }
         );
 
-        structures = ground.hutXs.slice(0, 2).map(hx => ({ x: hx, y: groundY - 140, w: 120, h: 140, style: 'hut' }));
+        structures.push({ x: 2780, y: 1340 - 60, w: 50, h: 60, style: 'terminal' });
         decorations = buildDecorations('lush', 3200, ground.segs);
+        activeTerminal = {
+          x: 2780,
+          y: 1340 - 60,
+          w: 50,
+          h: 60,
+          isOpen: false,
+          message: "If you are reading this I am gone.\nI can't do it. I seriously can't.\nAre they conscious?\nI sure hope not..."
+        };
 
         // Guaranteed-flat safety pads under the jump pads and the NPC (the
         // procedural ground band varies in height, so these ensure solid footing)
@@ -2466,7 +2855,6 @@ function createHitSpark(x, y, color = '#ff3333') {
           // Approach climb to the vault door - stays in the empty corridor
           // between the world edge and the main path, well clear of the
           // sealed vault's footprint so nothing can jump-skip the door.
-          { x: 150, y: 1520, w: 130, h: 28, type: 'clay' },
           { x: 500, y: 1540, w: 130, h: 28, type: 'mud' },
           { x: 350, y: 1360, w: 130, h: 28, type: 'clay' },
           { x: 500, y: 1180, w: 130, h: 28, type: 'mud' },
@@ -2577,8 +2965,8 @@ function createHitSpark(x, y, color = '#ff3333') {
         );
 
         movingPlatforms = [
-          { x: 300, y: 1720, w: 140, h: 32, vx: 3.8, minX: 250, maxX: 520, type: 'stone' },
-          { x: 1150, y: 1180, w: 140, h: 32, vx: -3.8, minX: 1050, maxX: 1350, type: 'iron' }
+          { x: 1000, y: 1720, w: 140, h: 32, vx: 3.8, minX: 900, maxX: 1400, type: 'stone' },
+          { x: 1850, y: 1380, w: 140, h: 32, vx: -3.8, minX: 1600, maxX: 2000, type: 'iron' }
         ];
 
         pressurePlates = [
@@ -3254,7 +3642,10 @@ if (!b.hidden) {
       zamRainDrops = [];
       gameStartTime = performance.now();
       elapsedSeconds = 0;
-      if (gameSettings.introCutscene) {
+      if (gameMode === 'defense') {
+        gameState = 'PLAYING';
+        loadCoreDefense();
+      } else if (gameSettings.introCutscene) {
         gameState = 'CUTSCENE';
         cutsceneTimer = 0;
       } else {
@@ -3263,8 +3654,39 @@ if (!b.hidden) {
       }
     }
 
-        startBtn.addEventListener('click', () => {
+        // Clicking "START GAME" from home screen now opens the new mode hub
+    startBtn.addEventListener('click', () => {
       switchScreen(homeScreen, modeScreen);
+    });
+
+    // Clicking "STORY MODE" opens the existing difficulty selector
+    storyModeHubBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
+      switchScreen(modeScreen, difficultyScreen);
+    });
+
+    // Back from difficulty screen returns to mode hub
+    diffBackBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
+      switchScreen(difficultyScreen, modeScreen);
+    });
+
+    // Back from mode hub returns to main home screen
+    modeBackBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
+      switchScreen(modeScreen, homeScreen);
+    });
+
+coreDefenseBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
+      gameMode = 'defense';
+      stopHomeMusic();
+      modeScreen.classList.add('fade-out');
+      setTimeout(() => {
+        modeScreen.classList.add('hidden');
+        modeScreen.classList.remove('fade-out');
+        beginRun(); // Skips intro letter and goes straight into Core Defense!
+      }, 220);
     });
 
         modeBackBtn.addEventListener('click', () => {
@@ -3272,34 +3694,37 @@ if (!b.hidden) {
     });
 
     normalModeBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
       gameMode = 'normal';
       stopHomeMusic();
-      modeScreen.classList.add('fade-out');
+      difficultyScreen.classList.add('fade-out');
       setTimeout(() => {
-        modeScreen.classList.add('hidden');
-        modeScreen.classList.remove('fade-out');
+        difficultyScreen.classList.add('hidden');
+        difficultyScreen.classList.remove('fade-out');
         if (gameSettings.introCutscene) { startIntro(); } else { beginRun(); }
       }, 220);
     });
 
     hardModeBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
       gameMode = 'hard';
       stopHomeMusic();
-      modeScreen.classList.add('fade-out');
+      difficultyScreen.classList.add('fade-out');
       setTimeout(() => {
-        modeScreen.classList.add('hidden');
-        modeScreen.classList.remove('fade-out');
+        difficultyScreen.classList.add('hidden');
+        difficultyScreen.classList.remove('fade-out');
         if (gameSettings.introCutscene) { startIntro(); } else { beginRun(); }
       }, 220);
     });
 
     speedrunModeBtn.addEventListener('click', () => {
+      playSfx(sfx.uiClick);
       gameMode = 'speedrun';
       stopHomeMusic();
-      modeScreen.classList.add('fade-out');
+      difficultyScreen.classList.add('fade-out');
       setTimeout(() => {
-        modeScreen.classList.add('hidden');
-        modeScreen.classList.remove('fade-out');
+        difficultyScreen.classList.add('hidden');
+        difficultyScreen.classList.remove('fade-out');
         if (gameSettings.introCutscene) { startIntro(); } else { beginRun(); }
       }, 220);
     });
@@ -4351,40 +4776,39 @@ if (!b.hidden) {
     }
 
 function drawEntityHealthBar(e) {
-        if (e.hp === undefined) return;
-        
-        // Automatically set maxHp the first time we see the enemy
-        if (!e.maxHp) {
-            e.maxHp = e.hp;
-        }
-
-        // Only show health bars if the enemy has taken damage or is a golem
-        if (e.hp >= e.maxHp && e.type !== 'golem') return;
-
-        const ratio = Math.max(0, Math.min(1, e.hp / e.maxHp));
-        const barW = Math.max(32, e.w || 32);
-        const barH = 4;
-        
-        // Relative coordinates centered above the enemy
-        const barX = -barW / 2;
-        const barY = -((e.h || 32) / 2) - 12;
-
-        ctx.save();
-        ctx.fillStyle = 'rgba(10, 12, 16, 0.88)';
-        ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
-        
-        let fillColor = '#00ff66';
-        if (ratio < 0.6) fillColor = '#ffcc00';
-        if (ratio < 0.25) fillColor = '#ff3311';
-
-        ctx.fillStyle = fillColor;
-        ctx.fillRect(barX, barY, barW * ratio, barH);
-
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
-        ctx.restore();
+    if (e.hp === undefined) return;
+    
+    // Automatically set maxHp the first time we see the enemy
+    if (!e.maxHp) {
+        e.maxHp = e.hp;
     }
+
+    // Only show health bars if the enemy has taken damage
+    if (e.hp >= e.maxHp) return;
+
+    const ratio = Math.max(0, Math.min(1, e.hp / e.maxHp));
+    const barW = Math.max(32, e.w || 32);
+    const barH = 4;
+    
+    const barX = -barW / 2;
+    const barY = -((e.h || 32) / 2) - 12;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(10, 12, 16, 0.88)';
+    ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+    
+    let fillColor = '#00ff66';
+    if (ratio < 0.6) fillColor = '#ffcc00';
+    if (ratio < 0.25) fillColor = '#ff3311';
+
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(barX, barY, barW * ratio, barH);
+
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+    ctx.restore();
+}
 	
 function drawEnemies(e) {
   const padding = 100;
@@ -5078,10 +5502,118 @@ function drawEnemies(e) {
         ctx.arc(ex - 0.6, ey - 0.6, 0.6, 0, Math.PI * 2);
         ctx.fill();
     });
-}
+// Tiny white reflections in eyes
+    ctx.fillStyle = '#ffffff';
+    eyeOffsets.forEach(([ex, ey]) => {
+        ctx.beginPath();
+        ctx.arc(ex - 0.6, ey - 0.6, 0.6, 0, Math.PI * 2);
+        ctx.fill();
+    });
+      } else if (e.type === 'crawler') {
+        if (e.vx < 0) ctx.scale(-1, 1);
+        const leg = Math.sin(player.animTimer * 0.5) * 4;
+        ctx.fillStyle = '#1f242d';
+        ctx.fillRect(-14, -8, 28, 14);
+        ctx.strokeStyle = '#ff3311';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-14, -8, 28, 14);
+        // Glowing red jaws & optic
+        ctx.fillStyle = '#ff3311';
+        ctx.fillRect(8, -5, 6, 4);
+        ctx.fillRect(12, 1, 5, 4);
+        // Scuttling mechanical legs
+        ctx.strokeStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.moveTo(-8, 6); ctx.lineTo(-12 + leg, 13);
+        ctx.moveTo(0, 6);  ctx.lineTo(0 - leg, 13);
+        ctx.moveTo(8, 6);  ctx.lineTo(12 + leg, 13);
+        ctx.stroke();
+      } else if (e.type === 'exploder_drone') {
+        const pulse = 4 + Math.sin(player.animTimer * 0.35) * 2.5;
+        ctx.fillStyle = '#2b1414';
+        ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ff3311'; ctx.lineWidth = 2.5; ctx.stroke();
+        // Volatile glowing bomb core
+        ctx.fillStyle = '#ff1111';
+        ctx.shadowColor = '#ff1111'; ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.arc(0, 0, pulse, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      } else if (e.type === 'sentinel') {
+        if (e.facing === 'left') ctx.scale(-1, 1);
+        // Heavy tank body
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(-18, -28, 34, 56);
+        ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 3;
+        ctx.strokeRect(-18, -28, 34, 56);
+        // Glowing red visor
+        ctx.fillStyle = '#ff3311';
+        ctx.fillRect(2, -20, 12, 5);
+        // Front Energy Riot Shield (blocks weak frontal shots)
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.35)';
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 10;
+        ctx.fillRect(16, -30, 7, 60);
+        ctx.strokeRect(16, -30, 7, 60);
+        ctx.shadowBlur = 0;
+      }
+	  else if (e.type === 'sapper') {
+        if (e.vx < 0) ctx.scale(-1, 1);
+        // Sleek yellow-black EMP Sapper buggy
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.moveTo(-15, 8); ctx.lineTo(-8, -8); ctx.lineTo(10, -8); ctx.lineTo(15, 8);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+        // EMP antenna
+        ctx.strokeStyle = '#00f0ff';
+        ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-4, -16); ctx.stroke();
+        ctx.fillStyle = '#00f0ff';
+        ctx.beginPath(); ctx.arc(-4, -16, 3, 0, Math.PI * 2); ctx.fill();
+        // Wheels
+        ctx.fillStyle = '#111';
+        ctx.beginPath(); ctx.arc(-8, 9, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(8, 9, 4, 0, Math.PI * 2); ctx.fill();
+      } else if (e.type === 'sniper_bot') {
+        // Purple/Cyan Hovering Rail-Sniper
+        const hover = Math.sin(player.animTimer * 0.12) * 4;
+        ctx.translate(0, hover);
+        ctx.fillStyle = '#3b0764';
+        ctx.fillRect(-18, -12, 36, 22);
+        ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2;
+        ctx.strokeRect(-18, -12, 36, 22);
+        // Targeting laser scope
+        ctx.fillStyle = '#ff0055';
+        ctx.shadowColor = '#ff0055'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(0, -1, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+        // Thruster glow underneath
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillRect(-10, 10, 20, 4);
+      } else if (e.type === 'juggernaut') {
+        if (e.facing === 'left') ctx.scale(-1, 1);
+        const stomp = Math.abs(Math.sin(player.animTimer * 0.1)) * 3;
+        ctx.translate(0, -stomp);
+        // Heavy crimson/gunmetal dreadnought mech
+        ctx.fillStyle = '#27272a';
+        ctx.fillRect(-26, -34, 52, 62);
+        ctx.strokeStyle = '#ff3311'; ctx.lineWidth = 3;
+        ctx.strokeRect(-26, -34, 52, 62);
+        // Glowing furnace core & visor
+        ctx.fillStyle = '#ff5500';
+        ctx.shadowColor = '#ff5500'; ctx.shadowBlur = 12;
+        ctx.fillRect(-8, -10, 20, 18);
+        ctx.fillRect(6, -26, 16, 6);
+        ctx.shadowBlur = 0;
+        // Heavy siege fists
+        ctx.fillStyle = '#18181b';
+        ctx.fillRect(18, -6, 14, 24);
+      }
 
       ctx.restore();
     }
+	
+	
 
  function drawDrone(d) {
   ctx.save();
@@ -6286,6 +6818,40 @@ function drawEnemies(e) {
         ctx.strokeStyle = '#5a3d28';
         ctx.lineWidth = 4;
         ctx.stroke();
+	} else if (s.style === 'terminal') {
+        // --- FUTURISTIC DATA TERMINAL ---
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(s.x, s.y + s.h - 4, s.w, 6);
+
+        // Terminal pedestal / console
+        ctx.fillStyle = '#18202c';
+        ctx.fillRect(s.x + 6, s.y + 12, s.w - 12, s.h - 12);
+        ctx.strokeStyle = '#0b1017';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(s.x + 6, s.y + 12, s.w - 12, s.h - 12);
+
+        // Glowing screen bezel
+        ctx.fillStyle = '#060a0f';
+        ctx.fillRect(s.x + 12, s.y + 18, s.w - 24, 32);
+        ctx.strokeStyle = '#223344';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(s.x + 12, s.y + 18, s.w - 24, 32);
+
+        // Flickering indicator lines on screen
+        const flicker = Math.floor(player.animTimer / 12) % 2 === 0;
+        ctx.fillStyle = flicker ? '#ff3333' : '#00f0ff';
+        ctx.fillRect(s.x + 16, s.y + 24, 16, 3);
+        ctx.fillRect(s.x + 16, s.y + 32, 26, 3);
+        ctx.fillRect(s.x + 16, s.y + 40, 10, 3);
+
+        // Blinking red light at base
+        ctx.fillStyle = '#ff1111';
+        ctx.shadowColor = '#ff1111';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(s.x + s.w / 2, s.y + s.h - 8, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
 
     } else if (s.style === 'tower') {
         // --- INDUSTRIAL TECH TOWER ---
@@ -6615,6 +7181,7 @@ function drawEnemies(e) {
   bgMusic.currentTime = 0;
   bgMusic34.currentTime = 0;
 
+isDefenseMode = false;
   gameState = 'HOME';
   homeScreen.classList.remove('hidden');
   playHomeMusic();
@@ -6682,9 +7249,11 @@ function drawEnemies(e) {
 
       // --- Charge shot: holding J/C builds charge, capped at 2s; fires on release ---
       if (keys.shootHeld && player.chargeTimer < 120) {
-    player.chargeTimer++;
-    // The exact frame it clicks to 120 (max charge), trigger a feedback pulse!
-    if (player.chargeTimer === 114) {
+        const prevCharge = player.chargeTimer;
+        const chargeStep = (isDefenseMode && defenseUpgrades.overcharge) ? 3 : 1;
+        player.chargeTimer = Math.min(120, player.chargeTimer + chargeStep);
+        // The exact frame it clicks to 120 (max charge), trigger a feedback pulse!
+        if (prevCharge < 114 && player.chargeTimer >= 114) {
         try {
             chargeShotSfx.currentTime = 0;
             chargeShotSfx.play().catch(() => {});
@@ -6932,7 +7501,7 @@ if (
       // --- NPC interaction (press Down/S): opens dialogue, press again to close it.
       // While the text is still typing out, this press does nothing - it can't
       // be used to skip ahead before the message finishes revealing. ---
-      if (keys.downPressed) {
+if (keys.downPressed && !isDefenseMode) {
         keys.downPressed = false;
         if (npcDialogueOpen) {
           if (npcAwaitingChoice) {
@@ -6958,6 +7527,29 @@ if (
         }
       }
 	  
+	  // --- TERMINAL NOTE INTERACTION LOGIC ---
+      const tDist = Math.sqrt(
+        Math.pow((player.x + player.width / 2) - (activeTerminal.x + activeTerminal.w / 2), 2) +
+        Math.pow((player.y + player.height / 2) - (activeTerminal.y + activeTerminal.h / 2), 2)
+      );
+
+      // Check if player is close enough
+      if (tDist < 90) {
+        // Detect a fresh press of 'S' or 'ArrowDown'
+        if ((keys.down || keys.downPressed) && !activeTerminal.wasPressing) {
+          activeTerminal.isOpen = !activeTerminal.isOpen;
+          activeTerminal.wasPressing = true;
+          keys.downPressed = false; // consume press event
+        }
+      } else {
+        // Auto-close if walking away
+        activeTerminal.isOpen = false;
+      }
+
+      // Reset press latch when key is released
+      if (!keys.down && !keys.downPressed) {
+        activeTerminal.wasPressing = false;
+      }
 	  // Auto-close the dialogue box if the player walks far enough from the NPC
 if (npcDialogueOpen && activeDialogueNpc) {
   const dx = (player.x + player.width / 2) - (activeDialogueNpc.x + activeDialogueNpc.w / 2);
@@ -7638,7 +8230,17 @@ if (boss.hp <= 0) {
             b.y + b.radius > e.y &&
             b.y - b.radius < e.y + e.h
           ) {
-            const damageDealt = b.damage;
+// Shield Sentinels only block uncharged 1-damage tap shots from the front! Any charge shot pierces!
+            let damageDealt = b.damage;
+            if (e.type === 'sentinel' && damageDealt < 2 && !b.charged) {
+              const hitFromFront = (e.facing === 'right' && b.vx < 0) || (e.facing === 'left' && b.vx > 0);
+              if (hitFromFront) {
+                createHitSpark(b.x, b.y, '#00f0ff');
+                bullets.splice(i, 1);
+                hitSomething = true;
+                break;
+              }
+            }
             e.hp -= damageDealt;
             e.hitFlashTimer = 3;
 
@@ -7657,6 +8259,10 @@ if (boss.hp <= 0) {
             bullets.splice(i, 1);
 
             if (e.hp <= 0) {
+if (isDefenseMode) {
+                const dropAmt = e.type === 'juggernaut' ? 4 : (e.type === 'sentinel' || e.type === 'sniper_bot' ? 2 : 1);
+                defenseDrops.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, vy: -4, amount: dropAmt });
+              }
               enemies.splice(j, 1);
               totalEnemyKills++;
               saveEnemyKillCount();
@@ -7970,11 +8576,18 @@ for (let i = dustPuffs.length - 1; i >= 0; i--) {
           player.y < exitDoor.y + exitDoor.h &&
           player.y + player.height > exitDoor.y
         ) {
-          if (isBossRoom) {
+          if (isDefenseMode) {
+            // Clean up defense mode and return directly to home screen
+            playSfx(sfx.levelComplete);
+            isDefenseMode = false;
+            exitDoor = null;
+            bgMusic.pause(); bgMusic34.pause(); stopLevel5Music();
+            bgMusic.currentTime = 0; bgMusic34.currentTime = 0;
+            gameState = 'HOME';
+            homeScreen.classList.remove('hidden');
+            playHomeMusic();
+          } else if (isBossRoom) {
             if (boss && boss.type === 'zam') {
-              // No victory screen for the secret fight - fade to black,
-              // hold for 3 seconds, then drop back to the main menu (the
-              // achievement was already unlocked on defeat).
               if (!zamExitSequence && fadeState === 'none') {
                 zamExitSequence = true;
                 fadeState = 'out';
@@ -7982,8 +8595,8 @@ for (let i = dustPuffs.length - 1; i >= 0; i--) {
             } else {
               triggerWin();
             }
-            } else if (enemies.length === 0) {
-		    playSfx(sfx.levelComplete);
+          } else if (enemies.length === 0) {
+            playSfx(sfx.levelComplete);
             if (currentLevel < 5) {
               loadLevel(currentLevel + 1);
             } else {
@@ -8001,10 +8614,34 @@ for (let i = dustPuffs.length - 1; i >= 0; i--) {
     camera.y = Math.max(0, Math.min(camera.y, camera.worldHeight - canvas.height));
 
             if (player.grounded && !wasGrounded) {
-    playSfx(sfx.land);
-    player.landTimer = 10;
-	spawnDustPuffs(player.x + player.width / 2, player.y + player.height, 7);
-}
+        playSfx(sfx.land);
+        player.landTimer = 10;
+        spawnDustPuffs(player.x + player.width / 2, player.y + player.height, 7);
+        if (isDefenseMode && defenseUpgrades.tesla) {
+          const landX = player.x + player.width / 2;
+          const landY = player.y + player.height;
+          createHitSpark(landX, landY, '#00f0ff');
+          createHitSpark(landX - 70, landY, '#00f0ff');
+          createHitSpark(landX + 70, landY, '#00f0ff');
+          hitSparks.push({
+            particles: [],
+            shockwave: { x: landX, y: landY, r: 10, maxR: 150, alpha: 1.0 },
+            color: '#00f0ff'
+          });
+          for (let ei = enemies.length - 1; ei >= 0; ei--) {
+            const en = enemies[ei];
+            if (Math.abs((en.x + en.w / 2) - (player.x + player.width / 2)) < 150 && Math.abs((en.y + en.h) - (player.y + player.height)) < 90) {
+              en.hp -= 3;
+              en.hitFlashTimer = 4;
+              createDamageNumber(en.x + en.w / 2, en.y, 3);
+              if (en.hp <= 0) {
+                defenseDrops.push({ x: en.x + en.w / 2, y: en.y + en.h / 2, vy: -4, amount: 1 });
+                enemies.splice(ei, 1);
+              }
+            }
+          }
+        }
+      }
 
 if (player.landTimer > 0) {
     player.landTimer--;
@@ -8559,8 +9196,13 @@ function drawPlatform(plat) {
       ctx.restore();
     }
 
-    function render() {
+function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (gameState === 'HOME' || gameState === 'GAMEOVER' || gameState === 'WIN') {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
 
       if (gameState === 'STUDIO') { renderStudioIntro(); return; }
       if (gameState === 'FALLING') { renderFallIntro(); return; }
@@ -8658,6 +9300,8 @@ function drawPlatform(plat) {
           ctx.stroke();
           ctx.restore();
         }
+		
+		
 
         // ============================================================
         // DIAGNOSTIC HUD TEXT ABOVE AFROBOT
@@ -8858,6 +9502,7 @@ movingPlatforms.forEach(plat => {
         if (isBossRoom && boss && boss.type !== 'zam' && (boss.state === 'laser_telegraph' || boss.state === 'laser_active') && boss.laserSpots) {
           drawChupitronLasers(boss);
         }
+		
 		        if (isBossRoom && boss && boss.type !== 'zam' && (boss.state === 'sidelaser_telegraph' || boss.state === 'sidelaser_active')) {
           drawChupitronSideLaser(boss);
         }
@@ -8981,8 +9626,390 @@ movingPlatforms.forEach(plat => {
 
             ctx.restore();
         }
+		
+		// ============================================================
+      // CORE DEFENSE UPDATE LOOP (Inside update())
+      // ============================================================
+if (isDefenseMode && defenseCore) {
+        const coreCenterX = defenseCore.x + defenseCore.w / 2;
+        const playerCenterX = player.x + player.width / 2;
+
+        if (window.coreGameStarted && defenseState === 'wave') {
+          if (defenseSpawnQueue > 0) {
+            defenseSpawnTimer--;
+            if (defenseSpawnTimer <= 0) {
+              spawnDefenseEnemy();
+              defenseSpawnQueue--;
+              defenseSpawnTimer = Math.max(40, 105 - defenseWave * 7);
+            }
+} else if (enemies.length === 0) {
+          if (defenseWave >= defenseMaxWaves) {
+            unlockAchievement('a14');
+            if (defenseScrap >= 50) {
+              unlockAchievement('a15');
+            }
+            // Spawn normal exit door on the right side of the arena
+            exitDoor = { x: 1050, y: 680 - 100, w: 50, h: 100 };
+            triggerNotification("DEFENSE COMPLETE! REACH THE EXIT DOOR!");
+          } else if (defenseWave % 3 === 0) {
+            defenseState = 'upgrade';
+          } else {
+            defenseState = 'intermission';
+            defenseIntermissionTimer = 180;
+          }
+        }
+        } else if (defenseState === 'intermission') {
+          defenseIntermissionTimer--;
+          if (defenseIntermissionTimer <= 0) startDefenseWave(defenseWave + 1);
+        }
+
+        // Deploy Turrets & Electric Traps with [S / Down]
+        let usedDownPress = false;
+        defenseTurretPads.forEach(pad => {
+          const padCenterX = pad.x + pad.w / 2;
+if (!pad.active && Math.abs(playerCenterX - padCenterX) < 75 && Math.abs((player.y + player.height) - pad.y) < 45 && keys.fPressed) {
+            keys.fPressed = false;
+            if (defenseScrap >= pad.cost) {
+              defenseScrap -= pad.cost;
+              pad.active = true;
+              pad.timer = 1200; // 20 seconds active duration
+              playSfx(sfx.uiClick);
+              triggerNotification(pad.kind === 'turret' ? "AUTO-TURRET DEPLOYED!" : "TESLA TRAP ARMED!");
+            } else {
+              triggerNotification("NEED " + pad.cost + " SCRAP!");
+            }
+          }
+
+          if (pad.active) {
+            pad.timer--;
+            if (pad.timer <= 0) pad.active = false;
+
+            if (pad.kind === 'turret') {
+              if (pad.fireCooldown > 0) pad.fireCooldown--;
+              else if (enemies.length > 0) {
+                let nearest = null, bestD = 550;
+                enemies.forEach(en => {
+                  const d = Math.hypot((en.x + en.w / 2) - padCenterX, (en.y + en.h / 2) - pad.y);
+                  if (d < bestD) { bestD = d; nearest = en; }
+                });
+                if (nearest) {
+                  const ang = Math.atan2((nearest.y + nearest.h / 2) - (pad.y + 10), (nearest.x + nearest.w / 2) - padCenterX);
+                  bullets.push({
+                    x: padCenterX, y: pad.y + 10,
+                    vx: Math.cos(ang) * 14, vy: Math.sin(ang) * 14,
+                    life: 55, radius: 5, damage: 2, charged: true
+                  });
+                  playSfx(sfx.shoot);
+                  pad.fireCooldown = 28;
+                }
+              }
+            } else if (pad.kind === 'trap') {
+              if (pad.zapCooldown > 0) pad.zapCooldown--;
+              else {
+                enemies.forEach(en => {
+                  if (en.x + en.w > pad.x && en.x < pad.x + pad.w && en.y + en.h >= pad.y - 12) {
+                    en.hp -= 2;
+                    en.hitFlashTimer = 4;
+                    createDamageNumber(en.x + en.w / 2, en.y, 2);
+                    createHitSpark(en.x + en.w / 2, pad.y, '#00f0ff');
+                    pad.zapCooldown = 22;
+                  }
+                });
+                enemies = enemies.filter(en => {
+                  if (en.hp <= 0) {
+                    defenseDrops.push({ x: en.x + en.w / 2, y: en.y + en.h / 2, vy: -3, amount: 1 });
+                    return false;
+                  }
+                  return true;
+                });
+              }
+            }
+          }
+        });
+        if (usedDownPress) keys.downPressed = false;
+		// Heal Afrobot Station logic ([F] to spend 8 scrap for +1 HP)
+        const healX = window.healStation.x + window.healStation.w / 2;
+        const healY = window.healStation.y;
+        if (Math.abs(playerCenterX - healX) < 45 && Math.abs((player.y + player.height) - healY) < 45 && keys.fPressed) {
+          keys.fPressed = false;
+          if (player.hp < player.maxHp) {
+            if (defenseScrap >= window.healStation.cost) {
+              defenseScrap -= window.healStation.cost;
+              player.hp = Math.min(player.maxHp, player.hp + 1);
+              playSfx(sfx.levelComplete);
+              createHitSpark(healX, healY, '#00ff66');
+              triggerNotification("HEALTH RESTORED!");
+            } else {
+              triggerNotification("NEED 8 SCRAP TO HEAL!");
+            }
+          } else {
+            triggerNotification("ALREADY AT FULL HEALTH!");
+          }
+        }
+
+        // Hold [S / Down] near the Core to repair
+        if (Math.abs(playerCenterX - coreCenterX) < 75 && player.grounded && keys.down && defenseCore.hp < defenseCore.maxHp) {
+          defenseCore.repairTimer++;
+          if (defenseCore.repairTimer % 15 === 0) {
+            defenseCore.hp = Math.min(defenseCore.maxHp, defenseCore.hp + 2);
+            createHitSpark(coreCenterX + (Math.random() - 0.5) * 40, defenseCore.y + 50, '#00ff66');
+          }
+        } else {
+          defenseCore.repairTimer = 0;
+        }
+
+        // Update Scrap Drops (with magnetic pull toward player!)
+        for (let di = defenseDrops.length - 1; di >= 0; di--) {
+          const drop = defenseDrops[di];
+          drop.vy += 0.35;
+          drop.y += drop.vy;
+          if (drop.y > 680 - 10) { drop.y = 680 - 10; drop.vy = 0; }
+          const distToP = Math.hypot(playerCenterX - drop.x, (player.y + player.height / 2) - drop.y);
+          if (distToP < 120) {
+            drop.x += (playerCenterX - drop.x) * 0.12;
+            drop.y += ((player.y + player.height / 2) - drop.y) * 0.12;
+          }
+          if (distToP < 38) {
+            defenseScrap += drop.amount;
+            playSfx(sfx.uiClick);
+            defenseDrops.splice(di, 1);
+          }
+        }
+
+        // Update Defense Enemies AI & Core Attacks
+        for (let ei = enemies.length - 1; ei >= 0; ei--) {
+          const e = enemies[ei];
+          const targetX = defenseCore.x + defenseCore.w / 2;
+          const targetY = defenseCore.y + defenseCore.h / 2;
+
+          if (e.type === 'crawler' || e.type === 'sentinel' || e.type === 'juggernaut' || e.type === 'sapper') {
+            const dir = targetX > (e.x + e.w / 2) ? 1 : -1;
+            const spd = e.type === 'sapper' ? 3.5 : (e.type === 'crawler' ? (2.2 + defenseWave * 0.12) : (e.type === 'sentinel' ? 1.1 : 0.75));
+            e.vx = dir * spd;
+            e.facing = dir > 0 ? 'right' : 'left';
+            e.x += e.vx;
+			e.vy = (e.vy || 0) + GRAVITY;
+            e.y += e.vy;
+            platforms.forEach(plat => {
+              if (e.x + e.w > plat.x && e.x < plat.x + plat.w &&
+                  e.y + e.h >= plat.y && e.y + e.h <= plat.y + e.vy + 10 && e.vy >= 0) {
+                e.y = plat.y - e.h;
+                e.vy = 0;
+              }
+            });
+
+            // Sappers disable active traps/turrets they run over!
+            if (e.type === 'sapper') {
+              defenseTurretPads.forEach(pad => {
+                if (pad.active && e.x + e.w > pad.x && e.x < pad.x + pad.w) {
+                  pad.timer = Math.max(0, pad.timer - 8);
+                }
+              });
+            }
+          } else if (e.type === 'exploder_drone') {
+            const dx = targetX - (e.x + e.w / 2);
+            const dy = targetY - (e.y + e.h / 2);
+            const dist = Math.max(1, Math.hypot(dx, dy));
+            e.vx = (dx / dist) * 2.5;
+            e.vy = (dy / dist) * 2.5;
+            e.x += e.vx;
+            e.y += e.vy;
+          } else if (e.type === 'sniper_bot') {
+            // Hover Sniper stops at mid-range and fires laser bolts at the Core
+            const distX = Math.abs(targetX - (e.x + e.w / 2));
+            if (distX > 360) {
+              e.x += (targetX > e.x ? 1.4 : -1.4);
+            }
+            e.y = e.originY + Math.sin(player.animTimer * 0.06) * 18;
+e.shootTimer--;
+            if (e.shootTimer <= 0) {
+              e.shootTimer = 110;
+              defenseCore.hp = Math.max(0, defenseCore.hp - 4);
+              createHitSpark(targetX, targetY - 10, '#ff0055');
+              playSfx(sfx.zamSpikeball);
+              if (!window.sniperBeams) window.sniperBeams = [];
+              window.sniperBeams.push({
+                x1: e.x + e.w / 2, y1: e.y + e.h / 2,
+                x2: targetX, y2: targetY, life: 12
+              });
+            }
+          }
+
+          // Check if enemy reached the Core
+          if (e.x < defenseCore.x + defenseCore.w && e.x + e.w > defenseCore.x &&
+              e.y < defenseCore.y + defenseCore.h && e.y + e.h > defenseCore.y) {
+            if (e.type === 'exploder_drone') {
+              defenseCore.hp -= 10;
+              triggerScreenShake(10, 6);
+              createHitSpark(e.x + e.w / 2, e.y + e.h / 2, '#ff3311');
+              playSfx(sfx.zamSpikeball);
+              enemies.splice(ei, 1);
+            } else {
+              e.attackTimer = (e.attackTimer || 0) + 1;
+              e.x -= e.vx;
+              if (e.attackTimer % 45 === 0) {
+                const dmg = e.type === 'juggernaut' ? 9 : (e.type === 'sentinel' ? 6 : 3);
+                defenseCore.hp -= dmg;
+                createHitSpark(targetX + (Math.random() - 0.5) * 40, targetY, '#ffaa00');
+                playSfx(sfx.zamSpikeball);
+              }
+            }
+
+            if (defenseCore.hp <= 0) {
+              defenseCore.hp = 0;
+              triggerGameOver();
+              return;
+            }
+          }
+        }
+      }
+	  
+	  if (defenseState === 'waiting_to_start') {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffcc33';
+            ctx.font = 'bold 24px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#ffcc33'; ctx.shadowBlur = 14;
+            ctx.fillText("CORE DEFENSE // READY", canvas.width / 2, canvas.height / 2 - 40);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '14px "Press Start 2P"';
+            ctx.fillText("PRESS [S] TO START WAVE 1", canvas.width / 2, canvas.height / 2 + 10);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+            return;
+          }
+	  
+	  if (isDefenseMode && defenseCore) {
+
+          // Surface Transmit Core in center
+          const cx = defenseCore.x + defenseCore.w / 2;
+          const cy = defenseCore.y + defenseCore.h / 2;
+          ctx.save();
+          ctx.fillStyle = '#111827';
+          ctx.fillRect(defenseCore.x, defenseCore.y, defenseCore.w, defenseCore.h);
+          ctx.strokeStyle = '#334155'; ctx.lineWidth = 4;
+          ctx.strokeRect(defenseCore.x, defenseCore.y, defenseCore.w, defenseCore.h);
+
+          const coreColor = defenseCore.hp > 35 ? '#00f0ff' : '#ff3311';
+          const corePulse = 22 + Math.sin(player.animTimer * 0.12) * 4;
+          ctx.fillStyle = coreColor;
+          ctx.shadowColor = coreColor; ctx.shadowBlur = 22;
+          ctx.beginPath(); ctx.arc(cx, cy, corePulse, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath(); ctx.arc(cx, cy, corePulse * 0.45, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+
+const currentPcx = player.x + player.width / 2;
+const coreBottomY = 680; // Floor level
+if (!window.coreGameStarted && Math.abs(currentPcx - cx) < 90 && Math.abs((player.y + player.height) - coreBottomY) < 80) {
+  ctx.fillStyle = '#ffcc33';
+  ctx.font = '11px "Press Start 2P"';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = '#ffcc33'; ctx.shadowBlur = 8;
+  ctx.fillText("PRESS [S] TO START GAME", cx, defenseCore.y - 18);
+  ctx.shadowBlur = 0;
+
+          } else if (Math.abs((player.x + player.width / 2) - cx) < 75 && defenseCore.hp < defenseCore.maxHp) {
+            ctx.fillStyle = '#00ff66';
+            ctx.font = '10px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText("HOLD [S] REPAIRS CORE", cx, defenseCore.y - 14);
+          }
+          ctx.restore();
+		  // Render Heal Afrobot Station safely
+          if (window.healStation) {
+            ctx.save();
+            const hs = window.healStation;
+            const hx = hs.x + hs.w / 2;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(hs.x, hs.y, hs.w, hs.h);
+            ctx.strokeStyle = '#00ff66'; ctx.lineWidth = 3;
+            ctx.strokeRect(hs.x, hs.y, hs.w, hs.h);
+
+            // Glowing green medical cross
+            ctx.fillStyle = '#00ff66';
+            ctx.shadowColor = '#00ff66'; ctx.shadowBlur = 12;
+            ctx.fillRect(hx - 4, hs.y + 8, 8, 24);
+            ctx.fillRect(hx - 12, hs.y + 16, 24, 8);
+            ctx.shadowBlur = 0;
+
+            const currentPcx = player.x + player.width / 2;
+            if (Math.abs(currentPcx - hx) < 48 && Math.abs((player.y + player.height) - hs.y) < 45) {
+              ctx.fillStyle = '#ffcc33';
+              ctx.font = '9px "Press Start 2P"';
+              ctx.textAlign = 'center';
+              ctx.fillText(`[F] HEAL (+1 HP) (${hs.cost} SCRAP)`, hx, hs.y - 10);
+            }
+            ctx.restore();
+          }
+
+          // Turret & Trap Pads
+          defenseTurretPads.forEach(pad => {
+            ctx.save();
+            ctx.fillStyle = pad.active ? '#0f291e' : '#1e293b';
+            ctx.fillRect(pad.x, pad.y, pad.w, pad.h);
+            ctx.strokeStyle = pad.active ? '#00ff66' : '#00f0ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(pad.x, pad.y, pad.w, pad.h);
+
+            if (pad.active && pad.kind === 'turret') {
+              ctx.fillStyle = '#00f0ff';
+              ctx.fillRect(pad.x + 10, pad.y - 10, 24, 12);
+            } else if (pad.active && pad.kind === 'trap') {
+              ctx.fillStyle = '#00f0ff';
+              ctx.fillRect(pad.x + 4, pad.y - 3, pad.w - 8, 3);
+} else if (Math.abs((player.x + player.width / 2) - (pad.x + pad.w / 2)) < 75 && Math.abs((player.y + player.height) - pad.y) < 45) {
+              ctx.fillStyle = '#ffcc33';
+            ctx.font = '9px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText(`[F] ${pad.kind.toUpperCase()} (${pad.cost})`, pad.x + pad.w / 2, pad.y - 10);
+            }
+            ctx.restore();
+          });
+
+          // Scrap Drops
+          defenseDrops.forEach(d => {
+            ctx.save();
+            ctx.fillStyle = '#ffcc33';
+            ctx.shadowColor = '#ffcc33'; ctx.shadowBlur = 8;
+            ctx.fillRect(d.x - 6, d.y - 6, 12, 12);
+            ctx.restore();
+          });
+        
+		if (defenseWave >= defenseMaxWaves && enemies.length === 0) {
+            ctx.save();
+            ctx.font = 'bold 36px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillText("VICTORY", canvas.width / 2, 160);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+          }
+
+        }
 
         enemies.forEach(e => drawEnemies(e));
+		if (window.sniperBeams) {
+          for (let i = window.sniperBeams.length - 1; i >= 0; i--) {
+            const beam = window.sniperBeams[i];
+            beam.life--;
+            ctx.save();
+            ctx.strokeStyle = '#ff0055';
+            ctx.shadowColor = '#ff0055';
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(beam.x1, beam.y1);
+            ctx.lineTo(beam.x2, beam.y2);
+            ctx.stroke();
+            ctx.restore();
+            if (beam.life <= 0) window.sniperBeams.splice(i, 1);
+          }
+        }
 		// Draw damage numbers
 damageNumbers.forEach(d => {
   ctx.save();
@@ -9004,6 +10031,23 @@ damageNumbers.forEach(d => {
 
 // Draw red hit sparks
 hitSparks.forEach(sparkGroup => {
+if (sparkGroup.shockwave && sparkGroup.shockwave.alpha > 0) {
+    const sw = sparkGroup.shockwave;
+    sw.r += (sw.maxR - sw.r) * 0.22;
+    sw.alpha -= 0.06;
+    if (sw.alpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, sw.alpha);
+      ctx.strokeStyle = sparkGroup.color || '#00f0ff';
+      ctx.shadowColor = sparkGroup.color || '#00f0ff';
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(sw.x || 0, sw.y || 0, sw.r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
   sparkGroup.particles.forEach(p => {
     ctx.save();
 
@@ -9249,8 +10293,8 @@ if (player.dashActive) {
 
                 // Level indicator - stylized badge, top left
         ctx.save();
-        ctx.font = 'bold 28px "Press Start 2P"';
-        const lvlText = `${currentLevel} / 5`;
+        ctx.font = 'bold 24px "Press Start 2P"';
+        const lvlText = isDefenseMode ? `DEFENSE` : `${currentLevel} / 5`;
         const lvlTextWidth = ctx.measureText(lvlText).width;
 
         const lvlPadding = 26;
@@ -9354,12 +10398,136 @@ if (player.dashActive) {
         }
         ctx.restore();
 		
+		if (isDefenseMode && defenseCore) {
+          ctx.save();
+          // Top-Center Core HP Bar, Wave Counter & Yellow Square Scrap Counter
+          const barW = 500, barH = 22;
+          const barX = (canvas.width - barW) / 2, barY = 24;
+          ctx.fillStyle = 'rgba(6, 10, 18, 0.9)';
+          ctx.fillRect(barX - 12, barY - 10, barW + 24, barH + 46);
+          ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 3;
+          ctx.strokeRect(barX - 12, barY - 10, barW + 24, barH + 46);
+
+          ctx.fillStyle = '#00f0ff';
+          ctx.font = 'bold 14px "Press Start 2P"';
+          ctx.textAlign = 'left';
+          ctx.fillText(`WAVE ${defenseWave}/${defenseMaxWaves}`, barX + 6, barY + 10);
+
+          // Yellow Square Icon + Scrap Count
+          ctx.fillStyle = '#ffcc33';
+          ctx.shadowColor = '#ffcc33'; ctx.shadowBlur = 8;
+          ctx.fillRect(barX + barW - 165, barY - 4, 14, 14);
+          ctx.shadowBlur = 0;
+          ctx.textAlign = 'right';
+          ctx.fillText(`SCRAP: ${defenseScrap}`, barX + barW - 6, barY + 10);
+		  
+		  // Label above the health bar
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '10px "Press Start 2P"';
+          ctx.textAlign = 'center';
+          ctx.fillText("CORE HP", barX + barW / 2, barY + 15);
+
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(barX, barY + 20, barW, barH);
+          ctx.fillStyle = defenseCore.hp > 35 ? '#00ff66' : '#ff3311';
+          ctx.fillRect(barX, barY + 20, barW * (defenseCore.hp / defenseCore.maxHp), barH);
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+          ctx.strokeRect(barX, barY + 20, barW, barH);
+
+          // Between-Wave Upgrade Selection Modal
+// Between-Wave Upgrade Selection Modal (Every 3 Waves, Waits Until Chosen)
+          if (defenseState === 'upgrade') {
+            const mw = 900, mh = 290;
+            const mx = (canvas.width - mw) / 2, my = (canvas.height - mh) / 2;
+            ctx.fillStyle = 'rgba(5, 8, 16, 0.96)';
+            ctx.fillRect(mx, my, mw, mh);
+            ctx.strokeStyle = '#ffcc33'; ctx.lineWidth = 4;
+            ctx.strokeRect(mx, my, mw, mh);
+
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffcc33';
+            ctx.font = 'bold 16px "Press Start 2P"';
+            ctx.fillText(`CHOOSE POWERUP`, canvas.width / 2, my + 42);
+
+ctx.textAlign = 'left';
+        ctx.font = '11px "Press Start 2P"';
+
+        // Overcharge Line
+        ctx.fillStyle = defenseUpgrades.overcharge ? '#444455' : (defenseScrap >= 16 ? '#00f0ff' : '#555566');
+        ctx.fillText(defenseUpgrades.overcharge ? "[1] OVERCHARGE — [PURCHASED]" : "[1] OVERCHARGE (16 SCRAP): +1 DMG & 3x Charge Speed", mx + 36, my + 95);
+
+        // Tesla Boots Line
+        ctx.fillStyle = defenseUpgrades.tesla ? '#444455' : (defenseScrap >= 8 ? '#55ff88' : '#555566');
+        ctx.fillText(defenseUpgrades.tesla ? "[2] TESLA BOOTS — [PURCHASED]" : "[2] TESLA BOOTS (8 SCRAP): +Speed & Landing Shockwave", mx + 36, my + 145);
+
+        // Repair Drones Line
+        ctx.fillStyle = defenseUpgrades.repairDrones ? '#444455' : (defenseScrap >= 12 ? '#ffaa44' : '#555566');
+        ctx.fillText(defenseUpgrades.repairDrones ? "[3] REPAIR DRONES — [PURCHASED]" : "[3] REPAIR DRONES (12 SCRAP): +35 Core HP/Wave & Heal Afrobot Upon Buying", mx + 36, my + 195);
+
+        ctx.fillStyle = '#cccccc';
+        ctx.fillText("[4] NONE", mx + 36, my + 245);
+          }
+          ctx.restore();
+        }
+		
 		if (gameMode === 'speedrun' && gameState === 'PLAYING' && !zamSecretActive) {
           ctx.save();
           ctx.font = '10px "Press Start 2P"';
           ctx.textAlign = 'right';
           ctx.fillStyle = '#ffcc33';
           ctx.fillText("[R] TO RESET", canvas.width - 260, 35);
+          ctx.restore();
+        }
+		// --- RENDER TERMINAL PROMPT & POP-UP NOTE ---
+        const distToTerm = Math.sqrt(
+          Math.pow((player.x + player.width / 2) - (activeTerminal.x + activeTerminal.w / 2), 2) +
+          Math.pow((player.y + player.height / 2) - (activeTerminal.y + activeTerminal.h / 2), 2)
+        );
+
+        if (distToTerm < 90 && !activeTerminal.isOpen && currentLevel === 1) {
+          ctx.save();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px "Press Start 2P"';
+          ctx.textAlign = 'center';
+          ctx.fillText("▼ OPEN", activeTerminal.x + activeTerminal.w / 2, activeTerminal.y - 12);
+          ctx.restore();
+        }
+
+      if (activeTerminal.isOpen && currentLevel === 1) {
+          const boxW = 740;
+          const boxH = 260; // Made significantly taller vertically
+          const boxX = (canvas.width - boxW) / 2;
+          const boxY = (canvas.height - boxH) / 2;
+
+          ctx.save();
+          // Solid dark terminal background
+          ctx.fillStyle = '#060a0f';
+          ctx.fillRect(boxX, boxY, boxW, boxH);
+          ctx.strokeStyle = '#00f0ff';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+          // Header title
+          ctx.fillStyle = '#00f0ff';
+          ctx.font = 'bold 12px "Press Start 2P"';
+          ctx.textAlign = 'left';
+          ctx.fillText("LOG FILE // ENCRYPTED TERMINAL NOTE", boxX + 32, boxY + 42);
+
+          // Divider line
+          ctx.strokeStyle = '#1b2a3a';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(boxX + 32, boxY + 62);
+          ctx.lineTo(boxX + boxW - 32, boxY + 62);
+          ctx.stroke();
+
+          // Properly aligned message lines with generous vertical spacing
+          ctx.fillStyle = '#ff4444';
+          ctx.font = '11px "Press Start 2P"';
+          const lines = activeTerminal.message.split('\n');
+for (let l = 0; l < lines.length; l++) {
+            ctx.fillText(lines[l], boxX + 32, boxY + 95 + (l * 40));
+          }
           ctx.restore();
         }
 		
