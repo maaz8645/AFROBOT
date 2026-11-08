@@ -846,12 +846,12 @@
         
         <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
           <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">How do I use charge shots, and what are the different tiers?</div>
-          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Hold down the [J] or [C] key to charge your weapon. Letting go early fires tiered charged shots (Damage 2 or 4), while holding it until the charge spark and audio cue trigger gives you a powerful 8-damage max charge shot with screen shake and recoil.</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Hold down the [J] or [C] key to charge your weapon. Letting go early fires tiered charged shots (Damage 2 or 4), while holding it until the charge spark and audio cue trigger gives you a powerful 8-damage max charge shot.</div>
         </div>
 
         <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
           <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">Why isn't my dash working immediately when I press Shift?</div>
-          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Holding [SHIFT] + [A/D] charges up a high-speed cyber dash for about 1.2 seconds. Changing directions while holding Shift won't cancel your charge, but you must keep holding until the burst triggers automatically.</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Holding [SHIFT] + [A/D] charges up a high-speed dash for about 1.2 seconds. Changing directions while holding Shift won't cancel your charge, but you must keep holding until the burst triggers automatically.</div>
         </div>
 
         <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
@@ -862,6 +862,11 @@
 		 <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
           <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">Why do tarantulas have 1 health?</div>
           <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Because they are ugly.</div>
+        </div>
+		
+		<div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
+          <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">I am stuck on Core Defense. How do I beat it?</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Core Defense gets intense fast! I recommend saving up your scrap rather than spending it right away, so you can afford the powerful Overcharge upgrade (25 Scrap) during the first upgrade window.</div>
         </div>
 
         <div style="background: rgba(255,255,255,0.05); border: 2px solid #ffcc33; padding: 16px; margin-bottom: 10px; text-align: left;">
@@ -1738,8 +1743,8 @@ let neverStoppedFailed = false;
         if (e.key === '1') {
           if (defenseUpgrades.overcharge) {
             triggerNotification("ALREADY PURCHASED!");
-          } else if (defenseScrap >= 16) {
-            defenseScrap -= 16;
+          } else if (defenseScrap >= 35) {
+            defenseScrap -= 35;
             defenseUpgrades.overcharge = true;
             player.bulletDamageBonus = (player.bulletDamageBonus || 0) + 1;
             triggerNotification("WEAPON OVERCHARGE UNLOCKED!");
@@ -1750,8 +1755,8 @@ let neverStoppedFailed = false;
         } else if (e.key === '2') {
           if (defenseUpgrades.tesla) {
             triggerNotification("ALREADY PURCHASED!");
-          } else if (defenseScrap >= 8) {
-            defenseScrap -= 8;
+          } else if (defenseScrap >= 15) {
+            defenseScrap -= 15;
             defenseUpgrades.tesla = true;
             player.speed = Math.min(9.5, player.speed + 0.6);
             triggerNotification("TESLA BOOTS UNLOCKED!");
@@ -1762,8 +1767,8 @@ let neverStoppedFailed = false;
         } else if (e.key === '3') {
           if (defenseUpgrades.repairDrones) {
             triggerNotification("ALREADY PURCHASED!");
-          } else if (defenseScrap >= 12) {
-            defenseScrap -= 12;
+          } else if (defenseScrap >= 20) {
+            defenseScrap -= 20;
             defenseUpgrades.repairDrones = true;
             if (defenseCore) defenseCore.hp = Math.min(defenseCore.maxHp, defenseCore.hp + 35);
             player.hp = player.maxHp;
@@ -2212,27 +2217,32 @@ defenseWave = 1;
 
     let popupTimer = null;
 
-    function triggerNotification(text) {
-      // ONLY allow wave announcements to show text on screen
-      if (!text.includes("WAVE")) return;
-
-      // Check if it's an achievement notification
-      if (text.startsWith("ACHIEVEMENT UNLOCKED:")) {
+function triggerNotification(text) {
+      // 1. Always allow achievements to show up first!
+      if (text && text.startsWith("ACHIEVEMENT UNLOCKED:")) {
         const actualName = text.replace("ACHIEVEMENT UNLOCKED: ", "");
         const popup = document.getElementById('achievement-popup');
         const nameEl = document.getElementById('popup-achievement-name');
         
-        nameEl.textContent = actualName;
-        popup.classList.add('show');
-        playAchievementJingle();
+        if (nameEl && popup) {
+          nameEl.textContent = actualName;
+          popup.classList.add('show');
+          playAchievementJingle();
 
-        if (popupTimer) clearTimeout(popupTimer);
-        popupTimer = setTimeout(() => {
-          popup.classList.remove('show');
-        }, 3500);
+          if (popupTimer) clearTimeout(popupTimer);
+          popupTimer = setTimeout(() => {
+            popup.classList.remove('show');
+          }, 3500);
+        }
         return;
       }
 
+      // 2. If we are in Core Defense mode, restrict text to only show WAVE announcements
+      if (isDefenseMode && !text.includes("WAVE")) {
+        return;
+      }
+
+      // 3. Allow story mode upgrades and general notifications to display normally
       notificationText = text;
       notificationTimer = 180;
     }
@@ -10453,16 +10463,16 @@ ctx.textAlign = 'left';
         ctx.font = '11px "Press Start 2P"';
 
         // Overcharge Line
-        ctx.fillStyle = defenseUpgrades.overcharge ? '#444455' : (defenseScrap >= 16 ? '#00f0ff' : '#555566');
-        ctx.fillText(defenseUpgrades.overcharge ? "[1] OVERCHARGE — [PURCHASED]" : "[1] OVERCHARGE (16 SCRAP): +1 DMG & 3x Charge Speed", mx + 36, my + 95);
+        ctx.fillStyle = defenseUpgrades.overcharge ? '#444455' : (defenseScrap >= 35 ? '#00f0ff' : '#555566');
+        ctx.fillText(defenseUpgrades.overcharge ? "[1] OVERCHARGE — [PURCHASED]" : "[1] OVERCHARGE (35 SCRAP): +1 DMG & 3x Charge Speed", mx + 36, my + 95);
 
         // Tesla Boots Line
-        ctx.fillStyle = defenseUpgrades.tesla ? '#444455' : (defenseScrap >= 8 ? '#55ff88' : '#555566');
-        ctx.fillText(defenseUpgrades.tesla ? "[2] TESLA BOOTS — [PURCHASED]" : "[2] TESLA BOOTS (8 SCRAP): +Speed & Landing Shockwave", mx + 36, my + 145);
+        ctx.fillStyle = defenseUpgrades.tesla ? '#444455' : (defenseScrap >= 15 ? '#55ff88' : '#555566');
+        ctx.fillText(defenseUpgrades.tesla ? "[2] TESLA BOOTS — [PURCHASED]" : "[2] TESLA BOOTS (15 SCRAP): +Speed & Landing Shockwave", mx + 36, my + 145);
 
         // Repair Drones Line
-        ctx.fillStyle = defenseUpgrades.repairDrones ? '#444455' : (defenseScrap >= 12 ? '#ffaa44' : '#555566');
-        ctx.fillText(defenseUpgrades.repairDrones ? "[3] REPAIR DRONES — [PURCHASED]" : "[3] REPAIR DRONES (12 SCRAP): +35 Core HP/Wave & Heal Afrobot Upon Buying", mx + 36, my + 195);
+        ctx.fillStyle = defenseUpgrades.repairDrones ? '#444455' : (defenseScrap >= 20 ? '#ffaa44' : '#555566');
+        ctx.fillText(defenseUpgrades.repairDrones ? "[3] REPAIR DRONES — [PURCHASED]" : "[3] REPAIR DRONES (20 SCRAP): +35 Core HP/Wave & Heal Afrobot Upon Buying", mx + 36, my + 195);
 
         ctx.fillStyle = '#cccccc';
         ctx.fillText("[4] NONE", mx + 36, my + 245);
