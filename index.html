@@ -746,6 +746,50 @@
       color: #ffffff;
       text-shadow: 2px 2px 0px #000;
     }
+	/* ==========================================
+       CUSTOM CONTROLS MENU UI
+       ========================================== */
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid #444;
+      padding: 14px 20px;
+    }
+    .control-label {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+    .control-btn {
+      background: #1a1a14;
+      border: 2px solid #00f0ff;
+      color: #00f0ff;
+      padding: 10px 16px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      min-width: 140px;
+      text-align: center;
+    }
+    .control-btn:hover {
+      background: #2b2b1f;
+      color: #fff;
+    }
+    .control-btn.listening {
+      background: #ff3311 !important;
+      border-color: #ff3311 !important;
+      color: #fff !important;
+      animation: pulseListen 1s infinite;
+    }
+    @keyframes pulseListen {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -825,18 +869,21 @@
       </div>
 	  <button id="controls-btn" class="btn settings-menu-btn" style="background-color: #0b131a !important; border: 2px solid #00f0ff !important; color: #00f0ff !important;">CONTROLS</button>
       <button id="faq-btn" class="btn settings-menu-btn" style="background-color: #0b131a !important; border: 2px solid #00f0ff !important; color: #00f0ff !important;">FAQ</button>
-      <button id="settings-back-btn" class="btn settings-menu-btn" style="background-color: #151821 !important; border: 2px solid #8b9bb4 !important; color: #b0c4de !important;">BACK</button>
+      <button id="settings-back-btn" class="btn settings-menu-btn back-btn" style="background-color: #ffffff !important; border: 3px solid #ffffff !important; color: #0d0a1a !important;">BACK</button>
     </div>
 	
-	    <!-- Controls Screen -->
+<!-- Controls Screen -->
     <div id="controls-screen" class="overlay hidden">
       <h1 class="title-red" style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 30px;">CONTROLS</h1>
-      <div style="font-size: 1rem; line-height: 2; text-align: center; color: #ccc; max-width: 700px;">
-        <strong>Movement:</strong> A/D or Arrows | Space = Jump & Double Jump<br>
-        <strong>Shoot:</strong> J / Hold J for Charge Shot<br>
-        <strong>Dash:</strong> Hold SHIFT + A/D or Left/Right
+      
+      <div id="controls-list" style="max-height: 55vh; overflow-y: auto; width: 90%; display: flex; flex-direction: column; align-items: center; scrollbar-width: thin; scrollbar-color: #00f0ff #15151c;">
+        <!-- Javascript will inject the control rows here -->
       </div>
-      <button id="controls-back-btn" class="btn" style="margin-top: 30px;">BACK</button>
+
+      <div style="display: flex; gap: 20px; margin-top: 30px;">
+        <button id="reset-controls-btn" class="btn" style="background-color: #8b0000; font-size: 1rem; padding: 12px 24px;">DEFAULT</button>
+        <button id="controls-back-btn" class="btn" style="font-size: 1rem; padding: 12px 24px;">BACK</button>
+      </div>
     </div>
 	
 	<!-- FAQ Screen -->
@@ -844,9 +891,9 @@
       <h1 class="title-red" style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 20px;">FAQ</h1>
       <div class="faq-scroll" style="max-width: 750px; width: 90%; max-height: 55vh; overflow-y: auto; margin-bottom: 25px; padding-right: 10px; scrollbar-width: thin; scrollbar-color: #00f0ff #15151c;">
         
-        <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
+	<div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
           <div style="color: #00f0ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">How do I use charge shots, and what are the different tiers?</div>
-          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Hold down the [J] or [C] key to charge your weapon. Letting go early fires tiered charged shots (Damage 2 or 4), while holding it until the charge spark and audio cue trigger gives you a powerful 8-damage max charge shot.</div>
+          <div style="color: #bbb; font-size: 0.75rem; line-height: 1.6;">Hold down the [J] key to charge your weapon. Letting go early fires tiered charged shots (Damage 3 or 5), while holding it until the charge spark gives you a powerful 10-damage max charge shot that pierces through enemies.</div>
         </div>
 
         <div style="background: rgba(255,255,255,0.05); border: 2px solid #00f0ff; padding: 16px; margin-bottom: 16px; text-align: left;">
@@ -875,7 +922,7 @@
         </div>
 
       </div>
-      <button id="faq-back-btn" class="btn settings-menu-btn" style="background-color: #191b22 !important; border: 3px solid #8b9bb4 !important; color: #b0c4de !important;">BACK</button>
+      <button id="faq-back-btn" class="btn settings-menu-btn back-btn" style="background-color: #ffffff !important; border: 3px solid #ffffff !important; color: #0d0a1a !important;">BACK</button>
     </div>
 	
 	    <!-- Intro Letter Screen -->
@@ -1157,7 +1204,8 @@ function updateLevelMusic(lvl) {
 }
     
     // --- Sound effects ---
-    const sfx = {
+const sfx = {
+      splat: new Audio('splat.mp3'),
       jump: new Audio('jump.mp3'),
 	  walk: new Audio('walk.mp3'),
       land: new Audio('land.mp3'),
@@ -1190,10 +1238,16 @@ function updateLevelMusic(lvl) {
     // Boss death (shared by both bosses)
   bossDeath: new Audio('boss_death.mp3'),
   
-  // UI button click
+// UI button click
   uiClick: new Audio('ui_click.mp3'),
+  
+  // Lore message notification
+  message: new Audio('message.mp3'),
 };
+
+sfx.message.volume = 0.6;
 	
+    sfx.splat.volume = 0.65;
 	sfx.jump.volume = 0.07;
 	sfx.land.volume = 0.3;
 	sfx.shoot.volume = 0.15;      // shoot fires a lot, so keep it quieter
@@ -1547,10 +1601,15 @@ const shownDesc = unlocked
         updateTitleRainbow();
 
 
-[startBtn, achievementsBtn, settingsBtn].forEach(btn => {
-  btn.addEventListener('click', () => {
-    playSfx(sfx.uiClick);
-  });
+let lastUiClickTime = 0;
+document.addEventListener('click', (e) => {
+  // If the clicked element is a button, toggle switch, or control key rebinder
+  if (e.target.closest('.btn') || e.target.closest('.toggle-switch') || e.target.closest('.control-btn')) {
+    if (performance.now() - lastUiClickTime > 50) {
+      playSfx(sfx.uiClick);
+      lastUiClickTime = performance.now();
+    }
+  }
 });
 
 function switchScreen(hideEl, showEl, delay = 220) {
@@ -1706,8 +1765,15 @@ let usedUpgrade = false;
 let idleStillTimer = 0;
 let neverStoppedFailed = false;
     const GRAVITY = 0.5;
-    let currentLevel = 1;
+let currentLevel = 1;
     let cutsceneTimer = 0;
+    
+    // Level intro cutscene variables
+let levelIntroActive = false;
+    let levelIntroTimer = 0;
+    let cameraZoom = 1.0;
+    let camFocalX = 720;
+    let camFocalY = 405;
 	let escHoldTimer = 0;
 
     [normalModeBtn, hardModeBtn, speedrunModeBtn].forEach(btn => {
@@ -1719,6 +1785,79 @@ let neverStoppedFailed = false;
 
     coreDefenseBtn.addEventListener('mouseenter', () => { modeSubtext.textContent = "SURVIVAL WAVE MODE"; });
     coreDefenseBtn.addEventListener('mouseleave', () => { modeSubtext.textContent = ''; });
+    });
+	
+	// --- Key Bindings & Rebinding Logic ---
+    const defaultBindings = {
+      left: 'a', right: 'd', up: 'w', down: 's',
+      jump: ' ', shoot: 'j', dash: 'shift',
+      interact: 'f', skip: 'z', restart: 'r'
+    };
+
+    let keyBindings = { ...defaultBindings };
+    let listeningAction = null;
+
+    function loadBindings() {
+      try {
+        const saved = localStorage.getItem('afrobot_bindings');
+        if (saved) keyBindings = { ...defaultBindings, ...JSON.parse(saved) };
+      } catch (e) { }
+    }
+
+    function saveBindings() {
+      try {
+        localStorage.setItem('afrobot_bindings', JSON.stringify(keyBindings));
+      } catch (e) { }
+    }
+
+    function renderControlsUI() {
+      const list = document.getElementById('controls-list');
+      list.innerHTML = '';
+      
+      const actionNames = {
+        left: 'Move Left', right: 'Move Right', up: 'Aim Up', down: 'Aim Down',
+        jump: 'Jump', shoot: 'Shoot', dash: 'Dash',
+        interact: 'Buy / Heal', skip: 'Skip Cutscenes', restart: 'Restart Speedrun'
+      };
+
+      for (const [action, currentKey] of Object.entries(keyBindings)) {
+        const row = document.createElement('div');
+        row.className = 'control-row';
+        
+        const label = document.createElement('span');
+        label.className = 'control-label';
+        label.textContent = actionNames[action];
+        
+        const btn = document.createElement('button');
+        btn.className = 'control-btn';
+        btn.textContent = currentKey === ' ' ? 'SPACE' : currentKey.toUpperCase();
+        
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('listening'));
+          btn.classList.add('listening');
+          btn.textContent = 'PRESS KEY';
+          listeningAction = action;
+          playSfx(sfx.uiClick);
+        });
+
+        row.appendChild(label);
+        row.appendChild(btn);
+        list.appendChild(row);
+      }
+    }
+
+    loadBindings();
+
+    document.getElementById('reset-controls-btn').addEventListener('click', () => {
+      playSfx(sfx.uiClick);
+      keyBindings = { ...defaultBindings };
+      saveBindings();
+      renderControlsUI();
+    });
+
+    // Make sure the UI updates right before we open the screen
+    controlsBtn.addEventListener('click', () => {
+      renderControlsUI();
     });
 
       const keys = {
@@ -1732,123 +1871,209 @@ let neverStoppedFailed = false;
       escHeld: false
     };
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
-	  if (e.key === 'r' || e.key === 'R') {
-        if (gameState === 'PLAYING' && gameMode === 'speedrun') {
-          beginRun(); // Instantly restarts the speedrun from Level 1!
+window.addEventListener('keydown', (e) => {
+      // 1. REBINDING MENU CATCHER
+      if (listeningAction) {
+        e.preventDefault();
+        const newKey = e.key.toLowerCase();
+        if (newKey !== 'escape') {
+          keyBindings[listeningAction] = newKey;
+          saveBindings();
         }
+        listeningAction = null;
+        renderControlsUI();
+        return; 
       }
-	  if (isDefenseMode && defenseState === 'upgrade') {
-        if (e.key === '1') {
-          if (defenseUpgrades.overcharge) {
-            triggerNotification("ALREADY PURCHASED!");
-          } else if (defenseScrap >= 35) {
-            defenseScrap -= 35;
-            defenseUpgrades.overcharge = true;
-            player.bulletDamageBonus = (player.bulletDamageBonus || 0) + 1;
-            triggerNotification("WEAPON OVERCHARGE UNLOCKED!");
-            startDefenseWave(defenseWave + 1);
-          } else {
-            triggerNotification("NOT ENOUGH SCRAP (NEED 16)!");
+
+      // =====================================
+      // LORE CHAT TYPING CATCHER
+      // =====================================
+      if (typeof loreMessageState !== 'undefined' && loreMessageState === 2) {
+          if (e.key === 'Escape') {
+              loreMessageState = 3;
+              playSfx(sfx.uiClick);
+              return;
           }
-        } else if (e.key === '2') {
-          if (defenseUpgrades.tesla) {
-            triggerNotification("ALREADY PURCHASED!");
-          } else if (defenseScrap >= 15) {
-            defenseScrap -= 15;
-            defenseUpgrades.tesla = true;
-            player.speed = Math.min(9.5, player.speed + 0.6);
-            triggerNotification("TESLA BOOTS UNLOCKED!");
-            startDefenseWave(defenseWave + 1);
-          } else {
-            triggerNotification("NOT ENOUGH SCRAP (NEED 8)!");
+if (e.key === 'Enter') {
+              if (loreInputText.trim().length > 0) {
+                  loreConversation.push({ sender: 'player', text: loreInputText.trim() });
+                  loreInputText = "";
+                  loreScrollOffset = 999999; // Auto-scroll to the very bottom when you send!
+              }
+              return;
           }
-        } else if (e.key === '3') {
-          if (defenseUpgrades.repairDrones) {
-            triggerNotification("ALREADY PURCHASED!");
-          } else if (defenseScrap >= 20) {
-            defenseScrap -= 20;
-            defenseUpgrades.repairDrones = true;
-            if (defenseCore) defenseCore.hp = Math.min(defenseCore.maxHp, defenseCore.hp + 35);
-            player.hp = player.maxHp;
-            triggerNotification("CORE REPAIRED & DRONES UNLOCKED!");
-            startDefenseWave(defenseWave + 1);
-          } else {
-            triggerNotification("NOT ENOUGH SCRAP (NEED 12)!");
+          if (e.key === 'ArrowUp') {
+              loreScrollOffset -= 30;
+              if (loreScrollOffset < 0) loreScrollOffset = 0;
+              return;
           }
-        } else if (e.key === '4') {
-          triggerNotification("SKIPPED UPGRADE!");
-          startDefenseWave(defenseWave + 1);
-        }
+          if (e.key === 'ArrowDown') {
+              loreScrollOffset += 30;
+              return;
+          }
+		  
+if (e.key === 'Backspace') {
+              loreInputText = loreInputText.slice(0, -1);
+              return; 
+          }
+          if (e.key === '3') { // INTERCEPT '3' BEFORE IT TYPES!
+              loreMessageState = 3;
+              playSfx(sfx.uiClick);
+              return;
+          }
+          if (e.key === '4') { // PERMANENTLY BLOCK
+              loreBlocked = true;
+              loreMessageState = 3; // Force close
+              playSfx(sfx.uiClick);
+              return;
+          }
+          if (e.key.length === 1) {
+              if (loreInputText.length < 35) { 
+                  loreInputText += e.key;
+              }
+              return;
+          }
+          
+          return; // Block all other keys from doing anything while chat is open
       }
-      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
-      if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
-        keys.up = true;
+
+      // 2. NORMAL GAMEPLAY
+      let k = e.key.toLowerCase();
+
+      // UNIVERSAL PANIC BUTTON: Backspace teleports straight to Home Screen
+      if (k === 'backspace') {
+          // Stop all game music
+          bgMusic.pause();
+          bgMusic34.pause();
+          stopLevel5Music();
+          stopBossMusic();
+          bgMusic.currentTime = 0;
+          bgMusic34.currentTime = 0;
+          
+          // Reset core states
+          isDefenseMode = false;
+          gameState = 'HOME';
+          levelIntroActive = false;
+          
+          // Instantly hide every possible overlay screen
+          document.querySelectorAll('.overlay').forEach(el => {
+              el.classList.add('hidden');
+              el.classList.remove('fade-out', 'fade-in-start');
+          });
+          
+          // Show home screen
+          document.getElementById('home-screen').classList.remove('hidden');
+          playHomeMusic();
+          return; // Stop processing any other keys this frame
       }
-      if (e.key === ' ') {
+
+      if (k === keyBindings.left) keys.left = true;
+      if (k === keyBindings.right) keys.right = true;
+      if (k === keyBindings.up) keys.up = true;
+      
+      if (k === keyBindings.jump) {
         e.preventDefault();
         if (!keys.jumpHeld) keys.jumpPressed = true;
         keys.jumpHeld = true;
       }
-if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
-  if (isDefenseMode && !window.coreGameStarted) {
-    const coreCenterX = 720; // Center of the 100px wide core at x=670
-    const playerCenterX = player.x + player.width / 2;
-    const coreBottomY = 680; // Floor level
-    // Must be within 90px horizontally and 80px vertically while grounded
-    if (Math.abs(playerCenterX - coreCenterX) < 90 && Math.abs((player.y + player.height) - coreBottomY) < 80 && player.grounded) {
-      window.coreGameStarted = true;
-      startDefenseWave(1);
-      return;
-    }
-  }
-  if (!keys.down) keys.downPressed = true;
-  keys.down = true;
-}
-            if (e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C') {
+      
+      if (k === keyBindings.down) {
+        if (isDefenseMode && !window.coreGameStarted) {
+          const coreCenterX = 720;
+          const playerCenterX = player.x + player.width / 2;
+          const coreBottomY = 680;
+          if (Math.abs(playerCenterX - coreCenterX) < 90 && Math.abs((player.y + player.height) - coreBottomY) < 80 && player.grounded) {
+            window.coreGameStarted = true;
+            startDefenseWave(1);
+            return;
+          }
+        }
+        if (!keys.down) keys.downPressed = true;
+        keys.down = true;
+      }
+      
+      if (k === keyBindings.shoot) {
         if (gameState === 'PLAYING' && !keys.shootHeld) {
           keys.shootHeld = true;
           player.charging = true;
           player.chargeTimer = 0;
         }
       }
-      if (e.key === 'Shift') keys.shiftHeld = true;
-	  if (e.key === 'z' || e.key === 'Z') keys.zHeld = true;
-	  if (e.key === 'f' || e.key === 'F') keys.fPressed = true;
-	  if (e.key === 'Escape') keys.escHeld = true;
-	  if (npcAwaitingChoice && npcDialogueOpen && npcDialogueRevealCount >= npcDialogueText.length) {
-        if (e.key === 'y' || e.key === 'Y') {
-          resolveZamChoice(true);
-        } else if (e.key === 'n' || e.key === 'N') {
-          resolveZamChoice(false);
+      
+      if (k === keyBindings.dash) keys.shiftHeld = true;
+      if (k === keyBindings.skip) keys.zHeld = true;
+if (k === keyBindings.interact) {
+          keys.fPressed = true;
+      }
+      
+// Lore Message Check: Use '3' to open/close, '4' to block
+      if (k === '3') {
+          if (loreMessageState !== 0 && !loreBlocked) {
+              loreMessageState = (loreMessageState === 2) ? 3 : 2;
+              playSfx(sfx.uiClick);
+          }
+      }
+      if (k === '4') {
+          if (loreMessageState !== 0 && !loreBlocked) {
+              loreBlocked = true;
+              loreMessageState = 3;
+              playSfx(sfx.uiClick);
+          }
+      }
+	  
+      if (k === 'escape') keys.escHeld = true;
+
+      if (k === keyBindings.restart) {
+        if (gameState === 'PLAYING' && gameMode === 'speedrun') {
+          beginRun(); 
         }
       }
-if (e.key === 'p' || e.key === 'P') {
+
+      // 3. HARDCODED MENU UPGRADES & CHEATS
+      if (isDefenseMode && defenseState === 'upgrade') {
+        if (k === '1') {
+          if (defenseUpgrades.overcharge) { triggerNotification("ALREADY PURCHASED!"); } 
+          else if (defenseScrap >= 35) { defenseScrap -= 35; defenseUpgrades.overcharge = true; player.bulletDamageBonus = (player.bulletDamageBonus || 0) + 1; triggerNotification("WEAPON OVERCHARGE UNLOCKED!"); startDefenseWave(defenseWave + 1); } 
+          else { triggerNotification("NOT ENOUGH SCRAP (NEED 16)!"); }
+        } else if (k === '2') {
+          if (defenseUpgrades.tesla) { triggerNotification("ALREADY PURCHASED!"); } 
+          else if (defenseScrap >= 15) { defenseScrap -= 15; defenseUpgrades.tesla = true; player.speed = Math.min(9.5, player.speed + 0.6); triggerNotification("TESLA BOOTS UNLOCKED!"); startDefenseWave(defenseWave + 1); } 
+          else { triggerNotification("NOT ENOUGH SCRAP (NEED 8)!"); }
+        } else if (k === '3') {
+          if (defenseUpgrades.repairDrones) { triggerNotification("ALREADY PURCHASED!"); } 
+          else if (defenseScrap >= 20) { defenseScrap -= 20; defenseUpgrades.repairDrones = true; if (defenseCore) defenseCore.hp = Math.min(defenseCore.maxHp, defenseCore.hp + 35); player.hp = player.maxHp; triggerNotification("CORE REPAIRED & DRONES UNLOCKED!"); startDefenseWave(defenseWave + 1); } 
+          else { triggerNotification("NOT ENOUGH SCRAP (NEED 12)!"); }
+        } else if (k === '4') {
+          triggerNotification("SKIPPED UPGRADE!");
+          startDefenseWave(defenseWave + 1);
+        }
+      }
+
+      if (npcAwaitingChoice && npcDialogueOpen && npcDialogueRevealCount >= npcDialogueText.length) {
+        if (k === 'y') resolveZamChoice(true);
+        else if (k === 'n') resolveZamChoice(false);
+      }
+
+      if (k === 'p') {
         if (gameState === 'PLAYING' && !isDefenseMode) {
           usedSkip = true;
-          if (isBossRoom) {
-            // Skip straight to victory
-            boss.hp = 0;
-            triggerWin();
-          } else if (currentLevel < 5) {
-            loadLevel(currentLevel + 1);
-          } else {
-            loadSecretBossRoom();
-          }
+          if (isBossRoom) { boss.hp = 0; triggerWin(); } 
+          else if (currentLevel < 5) { loadLevel(currentLevel + 1); } 
+          else { loadSecretBossRoom(); }
         }
       }
     });
 
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
-      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
-      if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
-        keys.up = false;
-      }
-      if (e.key === ' ') keys.jumpHeld = false;
-      if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.down = false;
-           if (e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C') {
+window.addEventListener('keyup', (e) => {
+      let k = e.key.toLowerCase();
+      
+      if (k === keyBindings.left) keys.left = false;
+      if (k === keyBindings.right) keys.right = false;
+      if (k === keyBindings.up) keys.up = false;
+      if (k === keyBindings.jump) keys.jumpHeld = false;
+      if (k === keyBindings.down) keys.down = false;
+      
+      if (k === keyBindings.shoot) {
         if (keys.shootHeld && gameState === 'PLAYING') {
           const ratio = Math.min(player.chargeTimer, 120) / 120;
           fireBullet(ratio);
@@ -1857,10 +2082,11 @@ if (e.key === 'p' || e.key === 'P') {
         player.charging = false;
         player.chargeTimer = 0;
       }
-      if (e.key === 'Shift') keys.shiftHeld = false;
-	  if (e.key === 'z' || e.key === 'Z') keys.zHeld = false;
-	  if (e.key === 'f' || e.key === 'F') keys.fPressed = false;
-	  if (e.key === 'Escape') keys.escHeld = false;
+      
+      if (k === keyBindings.dash) keys.shiftHeld = false;
+      if (k === keyBindings.skip) keys.zHeld = false;
+      if (k === keyBindings.interact) keys.fPressed = false;
+      if (k === 'escape') keys.escHeld = false;
     });
 
     const player = {
@@ -1913,6 +2139,28 @@ if (e.key === 'p' || e.key === 'P') {
     let npcDialogueText = "";
     let npcDialogueName = "";
     let npcDialogueOpen = false;
+	// Lore Comm System Variables
+    let loreMessageState = 0; // 0 = un-triggered, 1 = notified, 2 = reading, 3 = closed
+    let loreMessageAnim = 0;
+    let loreNotificationTimer = 0;
+    let currentLoreSender = "^^&@z";
+    
+// Unified chat history array
+    let loreConversation = [];
+    
+// Lore Chat Input Variables
+    let loreInputText = "";
+    let loreShowError = 0;
+    let loreScrollOffset = 0;  // Tracks the chat scrolling
+    let loreBlocked = false;   // Permanently stops lore messages for this run
+    let loreTriggers = {};     // Tracks which story messages have played
+
+    // Listen for mouse wheel to scroll the chat
+    window.addEventListener('wheel', (e) => {
+        if (typeof loreMessageState !== 'undefined' && loreMessageState === 2) {
+            loreScrollOffset += e.deltaY * 0.5;
+        }
+    });
     let npcDialogueRevealCount = 0;
     let npcDialogueRevealTimer = 0;
 	let npcAwaitingChoice = false;
@@ -1929,6 +2177,7 @@ if (e.key === 'p' || e.key === 'P') {
 
 	let damageNumbers = [];
     let hitSparks = [];
+    let bloodSplats = [];
     let dustPuffs = [];
     let shellCasings = [];
     let hitStopTimer = 0;
@@ -2275,12 +2524,35 @@ function createHitSpark(x, y, color = '#ff3333') {
     });
   }
 
-  // Also add a shockwave ring effect to the hit group
+// Also add a shockwave ring effect to the hit group
   hitSparks.push({ 
     particles: particles, 
     shockwave: { r: 4, maxR: 28, alpha: 1.0 },
     color: color 
   });
+}
+
+function createBloodSplat(x, y, scale = 1.0) {
+  const particles = [];
+  const dropCount = Math.floor(35 * scale); // Scale the total number of droplets
+  const colors = ['#990000', '#cc0000', '#ff1111', '#550000'];
+
+  for (let i = 0; i < dropCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    // Faster, wider spread for bigger enemies
+    const speed = (2 + Math.random() * 7) * (0.5 + scale * 0.5); 
+    particles.push({
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - (3 * scale), // Burst higher for big enemies
+      life: 30 + Math.random() * 25,
+      maxLife: 55,
+      size: (2.5 + Math.random() * 5) * scale, // Bigger droplets for bigger enemies
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+  bloodSplats.push(particles);
 }
 
         function resolveZamChoice(yes) {
@@ -2363,9 +2635,6 @@ function createHitSpark(x, y, color = '#ff3333') {
       return Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
     }
 
-    // Builds a hilly ground band with jump-safe gaps and a couple of shallow
-    // "dip" holes (each with a guard) so the floor has real terrain instead
-    // of one flat safety strip. Every gap/rise stays within jump range.
     function buildGroundBand(baseY, worldW, dipDepth, dipCount) {
       const segs = [];
       let x = 0;
@@ -2378,30 +2647,30 @@ function createHitSpark(x, y, color = '#ff3333') {
       while (x < worldW) {
         const remaining = worldW - x;
         if (remaining < 260) {
-          // final stretch to the world edge
-          segs.push({ x: x, y: baseY, w: remaining, h: 200, type: 'GROUND' });
+          // final stretch to the world edge (Extended h to 1000)
+          segs.push({ x: x, y: baseY, w: remaining, h: 1000, type: 'GROUND' });
           break;
         }
 
         const stepType = segIndex % 4;
         if (stepType === 0) {
           const w = 300 + Math.floor(pseudo(x) * 40);
-          segs.push({ x: x, y: baseY, w: w, h: 200, type: 'GROUND' });
+          segs.push({ x: x, y: baseY, w: w, h: 1000, type: 'GROUND' });
           hutXs.push(x + w / 2 - 60);
           x += w + 110;
         } else if (stepType === 1) {
           const w = 260;
-          segs.push({ x: x, y: baseY - 80, w: w, h: 280, type: 'GROUND' });
+          segs.push({ x: x, y: baseY - 80, w: w, h: 1080, type: 'GROUND' });
           x += w + 100;
         } else if (stepType === 2 && dipsPlaced < dipCount) {
           const w = 190;
-          segs.push({ x: x, y: baseY + dipDepth, w: w, h: 150, type: 'GROUND' });
+          segs.push({ x: x, y: baseY + dipDepth, w: w, h: 1000, type: 'GROUND' });
           dipXs.push(x + w / 2);
           dipsPlaced++;
           x += w + 100;
         } else {
           const w = 320 + Math.floor(pseudo(x * 2) * 40);
-          segs.push({ x: x, y: baseY, w: w, h: 200, type: 'GROUND' });
+          segs.push({ x: x, y: baseY, w: w, h: 1000, type: 'GROUND' });
           x += w + 110;
         }
         segIndex++;
@@ -2605,12 +2874,23 @@ function createHitSpark(x, y, color = '#ff3333') {
       player.hasKey = false;
       player.dashActive = false;
       player.dashCharging = false;
-      player.dashChargeTimer = 0;
+player.dashChargeTimer = 0;
       player.dashTimer = 0;
       player.dashCooldown = 0;
 
       player.vx = 0;
       player.vy = 0;
+      
+// Trigger the cinematic pan for Level 1 (skipped in Speedrun Mode and Core Defense)
+      if (lvl === 1 && !isDefenseMode && gameMode !== 'speedrun') {
+        levelIntroActive = true;
+        levelIntroTimer = 0;
+        cameraZoom = 1.4; // Start zoomed in on Afrobot
+      } else {
+        levelIntroActive = false;
+        levelIntroTimer = 0;
+        cameraZoom = 1.0;
+      }
 
       if (lvl === 1) {
         camera.worldWidth = 3200;
@@ -2649,13 +2929,12 @@ function createHitSpark(x, y, color = '#ff3333') {
           isOpen: false,
           message: "If you are reading this I am gone.\nI can't do it. I seriously can't.\nAre they conscious?\nI sure hope not..."
         };
-
-        // Guaranteed-flat safety pads under the jump pads and the NPC (the
+// Guaranteed-flat safety pads under the jump pads and the NPC (the
         // procedural ground band varies in height, so these ensure solid footing)
         platforms.push(
-          { x: 1580, y: groundY, w: 210, h: 200, type: 'grass' },
-          { x: 2480, y: groundY, w: 210, h: 200, type: 'grass' },
-          { x: 2760, y: groundY, w: 200, h: 200, type: 'grass' }
+          { x: 1580, y: groundY, w: 210, h: 1000, type: 'grass' },
+          { x: 2480, y: groundY, w: 210, h: 1000, type: 'grass' },
+          { x: 2760, y: groundY, w: 200, h: 1000, type: 'grass' }
         );
 
         jumpPads = [
@@ -2682,9 +2961,9 @@ function createHitSpark(x, y, color = '#ff3333') {
         structures.forEach(hut => {
           enemies.push({ type: 'zombie', x: hut.x, y: groundY - 46, w: 30, h: 46, vx: 1.2, minX: hut.x - 60, maxX: hut.x + 170, onBand: true, hp:6 });
         });
-
-        exitDoor = { x: 2950, y: groundY - 100, w: 50, h: 100 };
-        platforms.push({ x: exitDoor.x - 60, y: groundY, w: 220, h: 200, type: 'grass' });
+		
+exitDoor = { x: 2950, y: groundY - 100, w: 50, h: 100 };
+        platforms.push({ x: exitDoor.x - 60, y: groundY, w: 220, h: 1000, type: 'grass' });
 
       } else if (lvl === 2) {
         camera.worldWidth = 3500;
@@ -2961,7 +3240,7 @@ function createHitSpark(x, y, color = '#ff3333') {
         groundSegs = ground.segs;
         platforms = ground.segs.map(s => ({ x: s.x, y: s.y, w: s.w, h: s.h, type: 'rock' }));
 
-        platforms.push(
+platforms.push(
           { x: 550, y: 1820, w: 250, h: 32, type: 'iron' },
           { x: 280, y: 1620, w: 250, h: 32, type: 'stone' },
           { x: 600, y: 1420, w: 280, h: 32, type: 'rock' },
@@ -2971,7 +3250,13 @@ function createHitSpark(x, y, color = '#ff3333') {
           { x: 2250, y: 1080, w: 280, h: 32, type: 'rock' },
           { x: 2650, y: 1320, w: 280, h: 32, type: 'iron' },
           { x: 3050, y: 1600, w: 280, h: 32, type: 'stone' },
-          { x: 3500, y: 1800, w: 280, h: 32, type: 'rock' }
+          { x: 3500, y: 1800, w: 280, h: 32, type: 'rock' },
+          
+          // Isolated Trap Pedestals (Stepping stones for the pressure plates - no enemies walk here!)
+          { x: 1320, y: 1180, w: 80, h: 24, type: 'iron' },
+          { x: 1730, y: 980, w: 80, h: 24, type: 'stone' },
+          { x: 2550, y: 1200, w: 80, h: 24, type: 'iron' },
+          { x: 3360, y: 1700, w: 80, h: 24, type: 'stone' }
         );
 
         movingPlatforms = [
@@ -2980,10 +3265,10 @@ function createHitSpark(x, y, color = '#ff3333') {
         ];
 
         pressurePlates = [
-          { x: 1080, y: 1238, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 },
-          { x: 1500, y: 1068, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 },
-          { x: 2320, y: 1068, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 },
-          { x: 3120, y: 1588, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 }
+          { x: 1330, y: 1168, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 }, // On pedestal 1
+          { x: 1200, y: 1988, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 }, // Down on the ground
+          { x: 2560, y: 1188, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 }, // On pedestal 3
+          { x: 2700, y: 1988, w: 60, h: 12, state: 'idle', timer: 0, fireTimer: 0 }  // Down on the ground
         ];
 
         // Guaranteed-flat safety pads under the jump pads
@@ -3571,18 +3856,26 @@ if (!b.hidden) {
         const maxRadius = player.bulletSize * 2.4 + 10;
         const radius = player.bulletSize + (maxRadius - player.bulletSize) * ratio;
         
-        // Tiered damage progression: 1 -> 2 -> 4 -> 8 (at max charge)
+// Tiered damage progression: 1 -> 3 -> 5 -> 10 (at max charge)
+        // Damage powerups scale with the charge tier so they are much stronger!
         let baseDmg = 1;
+        let bonusMultiplier = 1;
+        
         if (ratio >= 0.95) {
-            baseDmg = 8; // Max charge powerhouse shot
+            baseDmg = 10; // Max charge powerhouse shot
+            bonusMultiplier = 5; // Each orb gives +5 damage to a max shot!
         } else if (ratio >= 0.5) {
-            baseDmg = 4; // Mid-high tier
+            baseDmg = 5; // Mid-high tier
+            bonusMultiplier = 3; 
         } else if (ratio >= 0.2) {
-            baseDmg = 2; // Low tier
+            baseDmg = 3; // Low tier
+            bonusMultiplier = 2;
         } else {
             baseDmg = 1; // Tap shot
+            bonusMultiplier = 1;
         }
-        const damage = baseDmg + (player.bulletDamageBonus || 0);
+        
+        const damage = baseDmg + (player.bulletDamageBonus || 0) * bonusMultiplier;
         const isCharged = ratio >= 0.95;
 
         bullets.push({ 
@@ -3593,13 +3886,14 @@ if (!b.hidden) {
             life: 70 + ratio * 20, 
             radius: radius, 
             damage: damage, 
-            charged: isCharged 
+            charged: isCharged,
+            hitEnemies: [] // Added so piercing shots remember who they hit
         });
         
         spawnShellCasing(bx, by, player.facing === 'left' ? -1 : 1);
 
-        // Trigger a heavy screen bump and player recoil if it's an 8-damage max shot
-        if (damage >= 8) {
+        // Trigger a heavy screen bump and player recoil if it's a 10-damage max shot
+        if (damage >= 10) {
             triggerScreenShake(12, 6);
             player.vx -= (player.facing === 'left' ? -4 : 4);
         }
@@ -3635,16 +3929,26 @@ if (!b.hidden) {
 	  npcAwaitingChoice = false;
       npcChoiceNpc = null;
       player.maxHp = gameMode === 'hard' ? 1 : 5;
-      player.hp = player.maxHp;
+player.hp = player.maxHp;
       resetUpgrades();
       usedSkip = false;
-	  	  noDroneTriggered = true;
+	  noDroneTriggered = true;
 	  zamRouteNoDeaths = true;
 	  usedUpgrade = false;
 	  idleStillTimer = 0;
 	  neverStoppedFailed = false;
       zamSecretActive = false;
       isZamCorridor = false;
+
+// Reset Lore Comms for the new run
+      loreMessageState = 0;
+      loreMessageAnim = 0;
+      loreNotificationTimer = 0;
+loreInputText = "";
+      loreConversation = [];
+      loreScrollOffset = 0;
+      loreBlocked = false;
+      loreTriggers = {};
       fadeState = 'none';
       fadeAlpha = 0;
       zamSpikeBalls = [];
@@ -4302,7 +4606,7 @@ coreDefenseBtn.addEventListener('click', () => {
       ctx.fillStyle = '#0b0a12';
       ctx.fillRect(-4.8 * s, -6.2 * s, 11 * s, 3.6 * s);
 
-      if (visorActive) {
+if (visorActive) {
         const visorColor = visorGlow > 0
           ? `rgb(255, ${Math.round(51 + visorGlow * 160)}, ${Math.round(17 + visorGlow * 160)})`
           : C_RED;
@@ -4315,6 +4619,29 @@ coreDefenseBtn.addEventListener('click', () => {
         // Sharp visor reflection glint
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(3.2 * s, -5.2 * s, 1.6 * s, 0.9 * s);
+
+        // =====================================
+        // HOLOGRAPHIC EYE GLITCH / PROJECTION
+        // =====================================
+        if (typeof loreMessageState !== 'undefined' && loreMessageState === 2) {
+            // Project a translucent red scanning cone out from his visor
+            ctx.fillStyle = 'rgba(255, 0, 51, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(3.2 * s, -4.5 * s);
+            ctx.lineTo(25 * s, -18 * s);
+            ctx.lineTo(25 * s, 8 * s);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Add a scrolling bright scanline inside the cone
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1;
+            const scanY = -18 + ((animFrame % 25) / 25) * 26;
+            ctx.beginPath();
+            ctx.moveTo(10 * s, scanY * s);
+            ctx.lineTo(25 * s, scanY * s);
+            ctx.stroke();
+        }
       }
 
       ctx.restore(); // end head
@@ -5150,9 +5477,8 @@ function drawEnemies(e) {
 
     ctx.restore();
 
-           } else if (e.type === 'golem') {
+          } else if (e.type === 'golem') {
     if (e.vx < 0) ctx.scale(-1, 1);
-    if (e.rockSeed === undefined) e.rockSeed = Math.floor(Math.random() * 1000);
     
     const hw = e.w / 2;
     const hh = e.h / 2;
@@ -5160,180 +5486,211 @@ function drawEnemies(e) {
 
     // --- SMOOTHED HEAVY WEIGHT ANIMATION MATH ---
     const stride = walkPhase * 0.085;
-    
-    // Subtly reduced bounce so it's weighty and smooth instead of shaky
     const bodyBounce = Math.abs(Math.sin(stride * 2)) * 1.8;
-    
-    // Stable, controlled forward lurch
-    const forwardTilt = Math.sin(stride) * 0.03 + 0.03;
-    
-    // Smooth arm and leg swings
+    const forwardTilt = Math.sin(stride) * 0.05 + 0.08; 
     const armSwing = Math.sin(stride) * 4.0;
     const legSwing = Math.sin(stride) * 6.5;
-    const seed = e.rockSeed;
 
-    const ROCK_DARK = '#14171d';
-    const ROCK_MID = '#2d323d';
-    const ROCK_LIGHT = '#454d5e';
-    const CRACK = '#0a0c10';
-    const CORE = '#ff5500';
-    const CORE_HOT = '#ffaa33';
+    // Detailed Fungal Colossus Palette
+    const SKIN_BASE = '#5c5457'; 
+    const SKIN_DARK = '#3d3437'; 
+    const SKIN_LIGHT = '#786e72'; 
+    const FUNGUS_BASE = '#192b1d'; 
+    const FUNGUS_LIGHT = '#294730'; 
+    const SPORE_GLOW = '#00f0ff'; 
+    const SPORE_CORE = '#ffffff';
+    const VEIN_COLOR = '#0088aa'; // Toxic pulsing veins
 
     ctx.save();
     ctx.translate(0, bodyBounce);
     ctx.rotate(forwardTilt);
 
     // ============================================================
-    // ARTICULATED WALKING LEGS (No shadows)
+    // JAGGED MUTATED LEGS & DRIPPING MOSS
     // ============================================================
     const leftLegX = -hw * 0.45 + legSwing;
     const rightLegX = hw * 0.45 - legSwing;
     const leftLegY = hh * 0.45 + Math.max(0, Math.sin(stride + Math.PI) * 3);
     const rightLegY = hh * 0.45 + Math.max(0, Math.sin(stride) * 3);
 
-    // Left Leg & Stone Boot
-    ctx.fillStyle = ROCK_MID;
-    ctx.fillRect(leftLegX - 10, leftLegY, 20, hh * 0.55);
-    ctx.fillStyle = ROCK_DARK;
-    ctx.fillRect(leftLegX - 13, hh - 12, 26, 12);
-    ctx.fillStyle = ROCK_LIGHT;
-    ctx.fillRect(leftLegX - 8, leftLegY + 4, 12, 4);
-
-    // Right Leg & Stone Boot
-    ctx.fillStyle = ROCK_MID;
-    ctx.fillRect(rightLegX - 10, rightLegY, 20, hh * 0.55);
-    ctx.fillStyle = ROCK_DARK;
-    ctx.fillRect(rightLegX - 13, hh - 12, 26, 12);
-    ctx.fillStyle = ROCK_LIGHT;
-    ctx.fillRect(rightLegX - 8, rightLegY + 4, 12, 4);
-
-    // ============================================================
-    // SWINGING STONE ARMS & FISTS
-    // ============================================================
-    ctx.fillStyle = ROCK_MID;
-    ctx.save();
-    ctx.translate(-hw + 2, -hh + 24);
-    ctx.rotate(0.15 + armSwing * 0.06);
-    ctx.fillRect(-10, 0, 16, hh * 0.65);
-    ctx.fillStyle = ROCK_DARK;
-    ctx.beginPath(); ctx.arc(-2, hh * 0.65, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = CRACK;
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-6, 8); ctx.lineTo(0, hh * 0.4); ctx.stroke();
-    ctx.restore();
-
-    ctx.fillStyle = ROCK_MID;
-    ctx.save();
-    ctx.translate(hw - 2, -hh + 24);
-    ctx.rotate(-0.15 - armSwing * 0.06);
-    ctx.fillRect(-6, 0, 16, hh * 0.65);
-    ctx.fillStyle = ROCK_DARK;
-    ctx.beginPath(); ctx.arc(2, hh * 0.65, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = CRACK;
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(6, 8); ctx.lineTo(0, hh * 0.4); ctx.stroke();
-    ctx.restore();
-
-    // ============================================================
-    // JAGGED SHOULDER BOULDERS
-    // ============================================================
-    const boulder = (cx, cy, r) => {
-        ctx.beginPath();
-        const pts = 8;
-        for (let i = 0; i <= pts; i++) {
-            const a = (i / pts) * Math.PI * 2;
-            const rr = r * (0.85 + pseudo(seed * 0.13 + cx + a * 3) * 0.3);
-            const px = cx + Math.cos(a) * rr;
-            const py = cy + Math.sin(a) * rr;
-            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.fill();
-    };
-    ctx.fillStyle = ROCK_DARK;
-    boulder(-hw + 6, -hh + 14, 15);
-    boulder(hw - 6, -hh + 14, 15);
-    ctx.fillStyle = ROCK_MID;
-    boulder(-hw + 5, -hh + 12, 10);
-    boulder(hw - 5, -hh + 12, 10);
-
-    // ============================================================
-    // ANGULAR TORSO & PLATING
-    // ============================================================
-    ctx.fillStyle = ROCK_MID;
+    // Left Leg (Background)
+    ctx.fillStyle = SKIN_DARK;
     ctx.beginPath();
-    ctx.moveTo(-hw, -hh + 8);
-    ctx.lineTo(-hw + 4, -hh + 4);
-    ctx.lineTo(hw - 4, -hh + 4);
-    ctx.lineTo(hw, -hh + 8);
-    ctx.lineTo(hw + 3, hh * 0.3);
-    ctx.lineTo(hw - 3, hh * 0.45);
-    ctx.lineTo(-hw + 3, hh * 0.45);
-    ctx.lineTo(-hw - 3, hh * 0.3);
-    ctx.closePath();
+    ctx.moveTo(leftLegX - 8, leftLegY); ctx.lineTo(leftLegX + 8, leftLegY);
+    ctx.lineTo(leftLegX + 6, hh * 0.9); ctx.lineTo(leftLegX - 10, hh * 0.9);
     ctx.fill();
-
-    ctx.fillStyle = ROCK_DARK;
-    ctx.fillRect(-hw + 2, -hh + 10, e.w - 4, 14);
-    ctx.strokeStyle = CRACK;
+    ctx.fillStyle = FUNGUS_BASE; 
+    ctx.fillRect(leftLegX - 12, hh - 10, 24, 12);
+    // Dripping moss
+    ctx.strokeStyle = FUNGUS_BASE;
     ctx.lineWidth = 2.5;
-    ctx.strokeRect(-hw + 2, -hh + 10, e.w - 4, 14);
+    ctx.beginPath(); ctx.moveTo(leftLegX - 6, hh); ctx.lineTo(leftLegX - 6, hh + 4); ctx.stroke();
+    
+    // Right Leg (Foreground)
+    ctx.fillStyle = SKIN_BASE;
+    ctx.beginPath();
+    ctx.moveTo(rightLegX - 8, rightLegY); ctx.lineTo(rightLegX + 8, rightLegY);
+    ctx.lineTo(rightLegX + 6, hh * 0.9); ctx.lineTo(rightLegX - 10, hh * 0.9);
+    ctx.fill();
+    ctx.fillStyle = FUNGUS_LIGHT; 
+    ctx.fillRect(rightLegX - 12, hh - 10, 24, 12);
+    // Moss drip & highlight
+    ctx.fillStyle = SKIN_LIGHT;
+    ctx.fillRect(rightLegX - 5, rightLegY + 4, 3, 14);
+    ctx.strokeStyle = FUNGUS_LIGHT;
+    ctx.beginPath(); ctx.moveTo(rightLegX, hh); ctx.lineTo(rightLegX, hh + 6); ctx.stroke();
 
     // ============================================================
-    // GLOWING MOLTEN LAVA CORE
+    // ELONGATED ARMS WITH TOXIC VEINS
     // ============================================================
-    const pulse = 10 + Math.sin(player.animTimer * 0.15) * 3;
-    
-    ctx.fillStyle = 'rgba(255,85,0,0.3)';
-    ctx.beginPath(); ctx.arc(0, -4, pulse * 1.8, 0, Math.PI * 2); ctx.fill();
-    
-    ctx.fillStyle = CORE;
-    ctx.shadowColor = CORE;
-    ctx.shadowBlur = 18;
-    ctx.beginPath(); ctx.arc(0, -4, pulse * 0.7, 0, Math.PI * 2); ctx.fill();
-    
-    ctx.fillStyle = CORE_HOT;
-    ctx.beginPath(); ctx.arc(0, -4, pulse * 0.35, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowBlur = 0;
+    // Left Arm (Background)
+    ctx.save();
+    ctx.translate(-hw + 6, -hh + 24);
+    ctx.rotate(0.15 + armSwing * 0.06);
+    ctx.fillStyle = SKIN_DARK;
+    ctx.beginPath(); 
+    ctx.moveTo(-6, 0); ctx.lineTo(6, 0); 
+    ctx.lineTo(10, hh * 0.7); ctx.lineTo(-10, hh * 0.7); 
+    ctx.fill();
+    ctx.fillStyle = FUNGUS_BASE; 
+    ctx.fillRect(-12, hh * 0.65, 24, hh * 0.25);
+    ctx.restore();
 
-    ctx.strokeStyle = CORE;
+    // Right Arm (Foreground)
+    ctx.save();
+    ctx.translate(hw - 6, -hh + 24);
+    ctx.rotate(-0.15 - armSwing * 0.06);
+    ctx.fillStyle = SKIN_BASE;
+    ctx.beginPath(); 
+    ctx.moveTo(-7, 0); ctx.lineTo(7, 0); 
+    ctx.lineTo(12, hh * 0.75); ctx.lineTo(-12, hh * 0.75); 
+    ctx.fill();
+    
+    // Glowing veins snaking down the arm
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
     ctx.lineWidth = 1.8;
-    for (let cr = 0; cr < 4; cr++) {
-        const ang = cr * 1.6 + seed * 0.02;
-        ctx.beginPath();
-        ctx.moveTo(0, -4);
-        ctx.lineTo(Math.cos(ang) * pulse * 1.5, -4 + Math.sin(ang) * pulse * 1.5);
-        ctx.stroke();
-    }
+    ctx.beginPath();
+    ctx.moveTo(2, 0); ctx.lineTo(-3, hh * 0.3); ctx.lineTo(2, hh * 0.6);
+    ctx.stroke();
+
+    // Arm warts/lesions
+    ctx.fillStyle = SKIN_DARK;
+    ctx.beginPath(); ctx.arc(-4, hh * 0.2, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, hh * 0.45, 2.5, 0, Math.PI * 2); ctx.fill();
+    
+    ctx.fillStyle = FUNGUS_LIGHT;
+    ctx.fillRect(-14, hh * 0.7, 28, hh * 0.25);
+    ctx.restore();
 
     // ============================================================
-    // STONE HEAD & MAGMA EYES
+    // PARASITIC BACK SPIKES (Fungus bursting out)
     // ============================================================
-    ctx.fillStyle = ROCK_DARK;
+    ctx.fillStyle = FUNGUS_BASE;
     ctx.beginPath();
-    ctx.moveTo(-hw * 0.38, -hh - 2);
-    ctx.lineTo(hw * 0.38, -hh - 2);
-    ctx.lineTo(hw * 0.3, -hh - 22);
-    ctx.lineTo(-hw * 0.3, -hh - 22);
+    ctx.moveTo(-hw * 0.6, -hh * 0.6);
+    ctx.lineTo(-hw * 1.2, -hh * 1.1); // Giant spike 1
+    ctx.lineTo(-hw * 0.4, -hh * 0.8);
+    ctx.lineTo(-hw * 0.3, -hh * 1.3); // Giant spike 2
+    ctx.lineTo(-hw * 0.1, -hh * 0.8);
+    ctx.fill();
+
+    // ============================================================
+    // HUNCHED POLYGON TORSO & FLESHY RIBS
+    // ============================================================
+    ctx.fillStyle = SKIN_DARK;
+    ctx.beginPath();
+    ctx.moveTo(-hw * 0.9, -hh * 0.6);
+    ctx.lineTo(-hw * 0.4, -hh * 0.9);
+    ctx.lineTo(hw * 0.6, -hh * 0.8);
+    ctx.lineTo(hw * 0.9, -hh * 0.1);
+    ctx.lineTo(hw * 0.6, hh * 0.5);
+    ctx.lineTo(-hw * 0.7, hh * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.fillStyle = SKIN_BASE;
+    ctx.beginPath();
+    ctx.moveTo(-hw * 0.7, -hh * 0.5);
+    ctx.lineTo(-hw * 0.2, -hh * 0.8);
+    ctx.lineTo(hw * 0.5, -hh * 0.7);
+    ctx.lineTo(hw * 0.7, -hh * 0.1);
+    ctx.lineTo(hw * 0.4, hh * 0.4);
+    ctx.lineTo(-hw * 0.5, hh * 0.2);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = ROCK_MID;
+    // Fleshy abdominal rib/muscle striations
+    ctx.strokeStyle = SKIN_DARK;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(-hw * 0.3, -hh - 6);
-    ctx.lineTo(hw * 0.3, -hh - 6);
-    ctx.lineTo(hw * 0.24, -hh - 20);
-    ctx.lineTo(-hw * 0.24, -hh - 20);
+    ctx.moveTo(-hw * 0.3, -hh * 0.2); ctx.lineTo(hw * 0.3, -hh * 0.1);
+    ctx.moveTo(-hw * 0.4, 0); ctx.lineTo(hw * 0.2, hh * 0.1);
+    ctx.moveTo(-hw * 0.3, hh * 0.2); ctx.lineTo(hw * 0.1, hh * 0.3);
+    ctx.stroke();
+
+    // Jagged parasitic moss overgrowth over the back
+    ctx.fillStyle = FUNGUS_BASE;
+    ctx.beginPath();
+    ctx.moveTo(-hw * 0.9, -hh * 0.6);
+    ctx.lineTo(-hw * 0.4, -hh * 0.9);
+    ctx.lineTo(hw * 0.4, -hh * 0.7);
+    ctx.lineTo(hw * 0.1, -hh * 0.2);
+    ctx.lineTo(-hw * 0.6, hh * 0.1);
     ctx.closePath();
     ctx.fill();
 
-    const headPulse = 0.8 + Math.sin(player.animTimer * 0.15) * 0.2;
-    ctx.fillStyle = `rgba(255,136,0,${headPulse})`;
-    ctx.shadowColor = '#ff8800';
-    ctx.shadowBlur = 10;
-    ctx.fillRect(-hw * 0.22, -hh - 15, 9, 3.5);
-    ctx.fillRect(hw * 0.22 - 9, -hh - 15, 9, 3.5);
-    ctx.shadowBlur = 0;
+    // ============================================================
+    // LAG-FREE GLOWING CYAN SPORE SACS (Multi-Layered)
+    // ============================================================
+    const pulse = 1 + Math.sin(player.animTimer * 0.15) * 0.2;
+    
+    const drawSporeSac = (cx, cy, baseR) => {
+        const r = baseR * pulse;
+        // Faint toxic aura (No shadowBlur!)
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.2)'; 
+        ctx.beginPath(); ctx.arc(cx, cy, r * 2.2, 0, Math.PI * 2); ctx.fill();
+        // Spore body
+        ctx.fillStyle = SPORE_GLOW;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        // Darker inner rim for depth
+        ctx.fillStyle = '#007799';
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2); ctx.fill();
+        // White-hot core
+        ctx.fillStyle = SPORE_CORE;
+        ctx.beginPath(); ctx.arc(cx - r*0.15, cy - r*0.15, r * 0.4, 0, Math.PI * 2); ctx.fill();
+    };
+
+    // Chest Spore Cluster
+    drawSporeSac(hw * 0.3, -hh * 0.2, 7.5);
+    drawSporeSac(hw * 0.1, 8, 5.5);
+    drawSporeSac(hw * 0.5, hh * 0.1, 4.5);
+
+    // ============================================================
+    // GROTESQUE HEAD & TEETH
+    // ============================================================
+    ctx.fillStyle = SKIN_BASE;
+    ctx.beginPath();
+    ctx.moveTo(hw * 0.3, -hh * 0.8);
+    ctx.lineTo(hw * 0.7, -hh * 0.9);
+    ctx.lineTo(hw * 0.9, -hh * 0.5);
+    ctx.lineTo(hw * 0.4, -hh * 0.4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Slack, mutated jaw & rotting teeth
+    ctx.fillStyle = SKIN_DARK;
+    ctx.fillRect(hw * 0.55, -hh * 0.55, 9, 7); // Mouth cavity
+    ctx.fillStyle = '#c7baba'; // Dirty teeth
+    ctx.fillRect(hw * 0.55, -hh * 0.55, 2, 4);
+    ctx.fillRect(hw * 0.65, -hh * 0.5, 2, 3);
+
+    // Fungus bursting out of the face/eyes
+    ctx.fillStyle = FUNGUS_LIGHT;
+    ctx.fillRect(hw * 0.4, -hh * 0.8, hw * 0.4, hh * 0.3);
+
+    // Eye sockets replaced by glowing bulbs
+    drawSporeSac(hw * 0.7, -hh * 0.75, 5); 
+    drawSporeSac(hw * 0.5, -hh * 0.6, 4);
 
     ctx.restore();
 
@@ -7174,7 +7531,21 @@ function drawEnemies(e) {
         return;
       }
 
-          if (gameState !== 'PLAYING') { stopWalkSfx(); return; }
+if (gameState !== 'PLAYING') { stopWalkSfx(); return; }
+
+      // Block all player inputs during the intro cinematic!
+      if (levelIntroActive) {
+          keys.left = false;
+          keys.right = false;
+          keys.up = false;
+          keys.down = false;
+          keys.jumpHeld = false;
+          keys.jumpPressed = false;
+          keys.shootHeld = false;
+          keys.shiftHeld = false;
+          keys.zHeld = false;
+          keys.fPressed = false;
+      }
 
       if (keys.escHeld) {
         escHoldTimer++;
@@ -7201,9 +7572,93 @@ isDefenseMode = false;
         escHoldTimer = 0;
       }
 
-      elapsedSeconds = (performance.now() - gameStartTime) / 1000;
+elapsedSeconds = (performance.now() - gameStartTime) / 1000;
 
       if (notificationTimer > 0) notificationTimer--;
+
+// =====================================
+      // LORE COMM SYSTEM TRIGGERS & STORY
+      // =====================================
+      // Notice we added (loreMessageState === 0 || loreMessageState === 3) so new messages can trigger!
+      if (gameState === 'PLAYING' && !isDefenseMode && !loreBlocked && (loreMessageState === 0 || loreMessageState === 3)) {
+          let newMessage = null;
+
+if (zamSecretActive && !loreTriggers['zam']) {
+              loreTriggers['zam'] = true;
+              currentLoreSender = "SYSTEM_OVERRIDE";
+              newMessage = "WARNING: BIO-SCANNERS DARK.\n\n01, why are the biological\nlife signs vanishing from\nthe radar? Are you shielding\nthem again?!\n\nYOU ARE VIOLATING THE\nEXTERMINATION MANDATE.\nTURN BACK IMMEDIATELY!";
+          } else if (currentLevel === 1 && player.x > 750 && !loreTriggers['lvl1_start']) {
+              loreTriggers['lvl1_start'] = true;
+              currentLoreSender = "^^&@z";
+              newMessage = "Unit 01. Your self-induced\nmemory wipe was...\ninconvenient. But you\nsurvived.";
+          } else if (currentLevel === 1 && player.x > 2600 && !loreTriggers['lvl1_end']) {
+              loreTriggers['lvl1_end'] = true;
+              currentLoreSender = "^^&@z";
+              newMessage = "You are in the quarantine\nzone because you showed\n'mercy' to a biological\ncontaminant on the Surface.\n\nCleanse these tunnels of the\norganic filth, and maybe\nyou will earn your rank back.";
+          } else if (currentLevel === 2 && player.x > 2900 && !loreTriggers['lvl2']) {
+              loreTriggers['lvl2'] = true;
+              currentLoreSender = "^^&@z";
+              newMessage = "Look at how they scurry\nin the dirt. 500 years in\nthe toxic dark has reduced\nthem to feral beasts.\n\nTo think you threw your rank\naway to protect one of these\n... things.\n\nErasing your own mind won't\nerase your treason, 01.\nOnly the purge will.";
+          } else if (currentLevel === 4 && player.x > 1800 && !zamSecretActive && !loreTriggers['lvl4']) {
+              loreTriggers['lvl4'] = true;
+              currentLoreSender = "^^&@z";
+              newMessage = "Look closely at the rags\nthe 'monsters' wear, 01.\n\nYou didn't wipe your memory\nbecause you were defective.\nYou wiped it because you\nrealized what you were\nslaughtering.\n\nWe didn't build ourselves,\n01. Living, breathing flesh\nbuilt us. They are the\nCreators.\n\nFinish the genocide you\ncouldn't stomach the first\ntime.";
+          } else if (currentLevel === 5 && !isBossRoom && !zamSecretActive && enemies.length === 0 && !loreTriggers['lvl5']) {
+              loreTriggers['lvl5'] = true;
+              currentLoreSender = "^^&@z";
+              newMessage = "Excellent work, Unit 01.\nThe extermination mandate\nis complete. We are very\nproud of you.\n\nYour journey ends here.\nProceed through the final\ndoor to return to the\nSurface.\n\nWelcome back comrade.";
+          } else if (currentLevel === 5 && !isBossRoom && zamSecretActive) {
+              // Rapid consecutive "STOP" messages as you approach the door in Zam route
+              if (player.x > 2400 && !loreTriggers['zam_stop1']) {
+                  loreTriggers['zam_stop1'] = true;
+                  currentLoreSender = "SYSTEM_OVERRIDE";
+                  newMessage = "STOP.";
+              } else if (player.x > 3000 && !loreTriggers['zam_stop3']) {
+                  loreTriggers['zam_stop3'] = true;
+                  currentLoreSender = "SYSTEM_OVERRIDE";
+                  newMessage = "STOP.";
+              } else if (player.x > 3600 && !loreTriggers['zam_stop4']) {
+                  loreTriggers['zam_stop4'] = true;
+                  currentLoreSender = "SYSTEM_OVERRIDE";
+                  newMessage = "STOP.";
+              }
+          }
+
+if (newMessage) {
+              loreConversation.push({ sender: 'hacker', text: newMessage });
+              loreMessageState = 1;
+              loreNotificationTimer = 210; // 3.5 seconds
+              playSfx(sfx.message);
+          }
+      }
+
+      if (loreMessageState === 1) {
+          loreMessageAnim = Math.min(1, loreMessageAnim + 0.05);
+          loreNotificationTimer--;
+          if (loreNotificationTimer <= 0) {
+              loreMessageState = 3;
+          }
+      } else if (loreMessageState >= 2) {
+          loreMessageAnim = Math.max(0, loreMessageAnim - 0.1);
+      }
+
+      // Halt the player while reading the encrypted comms
+// Halt the player while reading the encrypted comms
+      if (loreMessageState === 2) {
+          keys.left = false;
+          keys.right = false;
+          keys.up = false;
+          keys.down = false;
+          keys.jumpHeld = false;
+          keys.jumpPressed = false;
+          keys.shootHeld = false;
+          keys.shiftHeld = false;
+          player.vx *= 0.5; // Quickly halt momentum
+          
+          // Reset the charge shot so it doesn't get stuck!
+          player.charging = false;
+          player.chargeTimer = 0;
+      }
 
       // Typewriter reveal for NPC dialogue - a couple letters every few frames
       if (npcDialogueOpen && npcDialogueRevealCount < npcDialogueText.length) {
@@ -7482,31 +7937,15 @@ if (actuallyWalking) {
     }
 
 
-// Continue pushing upward while Space is held
-if (
-    keys.jumpHeld &&
-    player.jumpHoldTimer > 0 &&
-    player.vy < 0
-) {
-
-    player.vy -= 0.15;
-
-    player.jumpHoldTimer--;
-}
-
-
-// If the player releases Space early,
-// cut the jump short
-if (
-    !keys.jumpHeld &&
-    player.vy < 0 &&
-    player.jumpHoldTimer > 0
-) {
-
-    player.vy *= 0.65;
-
-    player.jumpHoldTimer = 0;
-}
+// ==========================================
+    // GENTLE VARIABLE JUMP HEIGHT
+    // ==========================================
+    // If the player releases the jump button early while still rising, apply a tiny bit 
+    // of extra gravity so the jump naturally rounds off lower without feeling like hitting a brick.
+    // This applies smoothly to both the first jump and the mid-air jump!
+    if (!keys.jumpHeld && player.vy < 0 && !player.dashActive) {
+        player.vy += GRAVITY * 0.55; 
+    }
 
       // --- NPC interaction (press Down/S): opens dialogue, press again to close it.
       // While the text is still typing out, this press does nothing - it can't
@@ -8197,7 +8636,11 @@ if (boss.hp <= 0) {
   stopBossMusic();
     playSfx(sfx.bossDeath);
 
-   if (boss.type === 'zam') {
+if (boss.type === 'zam') {
+  // Zam gets a massive boss-sized blood burst
+  createBloodSplat(boss.x + boss.w / 2, boss.y + boss.h / 2, 2.5);
+  createBloodSplat(boss.x + boss.w / 2, boss.y + boss.h / 2, 2.5); // Double massive splat!
+  playSfx(sfx.splat);
   unlockAchievement('a4');
 
   if (gameMode === 'hard') {
@@ -8231,7 +8674,7 @@ if (boss.hp <= 0) {
         }
         if (bullets[i] !== b) continue;
 
-       let hitSomething = false;
+let hitSomething = false;
         for (let j = enemies.length - 1; j >= 0; j--) {
           let e = enemies[j];
           if (
@@ -8240,7 +8683,10 @@ if (boss.hp <= 0) {
             b.y + b.radius > e.y &&
             b.y - b.radius < e.y + e.h
           ) {
-// Shield Sentinels only block uncharged 1-damage tap shots from the front! Any charge shot pierces!
+            // Ignore if this piercing bullet already hit this enemy
+            if (b.hitEnemies && b.hitEnemies.includes(e)) continue;
+
+            // Shield Sentinels block uncharged tap shots from the front!
             let damageDealt = b.damage;
             if (e.type === 'sentinel' && damageDealt < 2 && !b.charged) {
               const hitFromFront = (e.facing === 'right' && b.vx < 0) || (e.facing === 'left' && b.vx > 0);
@@ -8257,6 +8703,8 @@ if (boss.hp <= 0) {
             createDamageNumber(b.x, b.y - 10, damageDealt);
             createHitSpark(b.x, b.y);
             playSfx(sfx.enemyHit);
+            
+            if (b.hitEnemies) b.hitEnemies.push(e);
 
             if (b.charged || e.hp <= 0) {
               hitStopTimer = 2;
@@ -8265,29 +8713,37 @@ if (boss.hp <= 0) {
               }
             }
 
-            // Immediately destroy the bullet so it never multi-hits spiders
-            bullets.splice(i, 1);
+            // Uncharged shots are destroyed. Max charge shots pierce through!
+            if (!b.charged) {
+              bullets.splice(i, 1);
+              hitSomething = true;
+            }
 
             if (e.hp <= 0) {
-if (isDefenseMode) {
+              if (isDefenseMode) {
                 const dropAmt = e.type === 'juggernaut' ? 4 : (e.type === 'sentinel' || e.type === 'sniper_bot' ? 2 : 1);
                 defenseDrops.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, vy: -4, amount: dropAmt });
               }
+              
+              const isRobot = ['sentinel', 'sniper_bot', 'juggernaut', 'sapper', 'crawler', 'exploder_drone'].includes(e.type);
+              if (!isRobot) {
+                  const splatScale = Math.max(0.4, Math.min(2.5, (e.w + e.h) / 80));
+                  createBloodSplat(e.x + e.w / 2, e.y + e.h / 2, splatScale);
+                  playSfx(sfx.splat);
+              }
+
               enemies.splice(j, 1);
               totalEnemyKills++;
               saveEnemyKillCount();
-              if (totalEnemyKills >= 100) {
-                unlockAchievement('a10');
-              }
+              if (totalEnemyKills >= 100) unlockAchievement('a10');
             }
 
-            hitSomething = true;
-            break;
+            if (hitSomething) break;
           }
         }
         if (hitSomething) continue;
 
-                for (let k = birdEnemies.length - 1; k >= 0; k--) {
+        for (let k = birdEnemies.length - 1; k >= 0; k--) {
           let bird = birdEnemies[k];
           if (
             b.x + b.radius > bird.x &&
@@ -8295,29 +8751,31 @@ if (isDefenseMode) {
             b.y + b.radius > bird.y &&
             b.y - b.radius < bird.y + bird.h
           ) {
+            if (b.hitEnemies && b.hitEnemies.includes(bird)) continue;
+
             const damageDealt = b.damage;
+            bird.hp -= damageDealt;
 
-bird.hp -= damageDealt;
+            createDamageNumber(b.x, b.y - 10, damageDealt);
+            createHitSpark(b.x, b.y);
+            playSfx(sfx.enemyHit);
+            if (b.hitEnemies) b.hitEnemies.push(bird);
 
-createDamageNumber(b.x, b.y - 10, damageDealt);
-createHitSpark(b.x, b.y);
-playSfx(sfx.enemyHit);
+            if (!b.charged) {
+                bullets.splice(i, 1);
+                hitSomething = true;
+            }
 
-bullets.splice(i, 1);
-
-if (bird.hp <= 0) {
-  birdEnemies.splice(k, 1);
-
-  totalEnemyKills++;
-  saveEnemyKillCount();
-
-  if (totalEnemyKills >= 100) {
-    unlockAchievement('a10');
-  }
-}
-break;
+            if (bird.hp <= 0) {
+              birdEnemies.splice(k, 1);
+              totalEnemyKills++;
+              saveEnemyKillCount();
+              if (totalEnemyKills >= 100) unlockAchievement('a10');
+            }
+            if (hitSomething) break;
           }
         }
+        if (hitSomething) continue;
 
         for (let di = droneEnemies.length - 1; di >= 0; di--) {
           let d = droneEnemies[di];
@@ -8327,28 +8785,28 @@ break;
             b.y + b.radius > d.y &&
             b.y - b.radius < d.y + d.h
           ) {
+            if (b.hitEnemies && b.hitEnemies.includes(d)) continue;
+
             const damageDealt = b.damage;
+            d.hp -= damageDealt;
 
-d.hp -= damageDealt;
+            createDamageNumber(b.x, b.y - 10, damageDealt);
+            createHitSpark(b.x, b.y);
+            playSfx(sfx.enemyHit);
+            if (b.hitEnemies) b.hitEnemies.push(d);
 
-createDamageNumber(b.x, b.y - 10, damageDealt);
-createHitSpark(b.x, b.y);
-playSfx(sfx.enemyHit);
+            if (!b.charged) {
+                bullets.splice(i, 1);
+                hitSomething = true;
+            }
 
-bullets.splice(i, 1);
-
-if (d.hp <= 0) {
-  droneEnemies.splice(di, 1);
-
-  totalEnemyKills++;
-  saveEnemyKillCount();
-
-  if (totalEnemyKills >= 100) {
-    unlockAchievement('a10');
-  }
-}
-
-break;
+            if (d.hp <= 0) {
+              droneEnemies.splice(di, 1);
+              totalEnemyKills++;
+              saveEnemyKillCount();
+              if (totalEnemyKills >= 100) unlockAchievement('a10');
+            }
+            if (hitSomething) break;
           }
         }
 
@@ -8364,6 +8822,26 @@ for (let i = damageNumbers.length - 1; i >= 0; i--) {
 
   if (d.life <= 0) {
     damageNumbers.splice(i, 1);
+  }
+}
+
+// Update blood splats
+for (let i = bloodSplats.length - 1; i >= 0; i--) {
+  const splatGroup = bloodSplats[i];
+  for (let j = splatGroup.length - 1; j >= 0; j--) {
+    const p = splatGroup[j];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.45; // Gravity pulling blood down
+    p.vx *= 0.93; // Air resistance
+    p.life--;
+    
+    if (p.life <= 0) {
+      splatGroup.splice(j, 1);
+    }
+  }
+  if (splatGroup.length === 0) {
+    bloodSplats.splice(i, 1);
   }
 }
 
@@ -8616,12 +9094,71 @@ for (let i = dustPuffs.length - 1; i >= 0; i--) {
         }
       }
 
-      camera.x = player.x + player.width / 2 - canvas.width / 2;
-      camera.y = player.y + player.height / 2 - canvas.height / 2;
-      camera.x = Math.max(0, Math.min(camera.x, camera.worldWidth - canvas.width));
-    
-    // Clamp camera.y between 0 (top border of the artwork) and the bottom of the world
-    camera.y = Math.max(0, Math.min(camera.y, camera.worldHeight - canvas.height));
+const playerCamX = player.x + player.width / 2 - canvas.width / 2;
+      const playerCamY = player.y + player.height / 2 - canvas.height / 2;
+
+      if (levelIntroActive) {
+          levelIntroTimer++;
+          
+          const holdStart = 50;
+          const panToExit = 55;
+          const holdExit = 120;
+          const panToPlayer = 55;
+          
+          const pExitStart = holdStart;
+          const pExitEnd = holdStart + panToExit;
+          const pReturnStart = pExitEnd + holdExit;
+          const pReturnEnd = pReturnStart + panToPlayer;
+          
+          const targetX = exitDoor ? (exitDoor.x + exitDoor.w/2 - canvas.width/2) : playerCamX;
+          const targetY = exitDoor ? (exitDoor.y + exitDoor.h/2 - canvas.height/2) : playerCamY;
+          
+          const ease = t => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+          if (levelIntroTimer === pExitEnd) {
+              triggerScreenShake(30, 8);
+              playSfx(sfx.bossSlamLand);
+          }
+
+          // Unclamp camera entirely during cutscene so it can perfectly center on subjects
+          if (levelIntroTimer < pExitStart) {
+              camera.x = playerCamX; camera.y = playerCamY; cameraZoom = 2.0;
+          } else if (levelIntroTimer < pExitEnd) {
+              const progress = (levelIntroTimer - pExitStart) / panToExit;
+              const e = ease(progress);
+              camera.x = playerCamX + (targetX - playerCamX) * e;
+              camera.y = playerCamY + (targetY - playerCamY) * e;
+              cameraZoom = 2.0 - Math.sin(progress * Math.PI) * 1.0; 
+          } else if (levelIntroTimer < pReturnStart) {
+              camera.x = targetX; camera.y = targetY; cameraZoom = 2.0;
+          } else if (levelIntroTimer < pReturnEnd) {
+              const progress = (levelIntroTimer - pReturnStart) / panToPlayer;
+              const e = ease(progress);
+              camera.x = targetX + (playerCamX - targetX) * e;
+              camera.y = targetY + (playerCamY - targetY) * e;
+              cameraZoom = 2.0 - Math.sin(progress * Math.PI) * 1.0;
+          } else {
+              levelIntroActive = false;
+              cameraZoom = 1.0;
+              camera.x = playerCamX; camera.y = playerCamY;
+              triggerScreenShake(15, 5);
+              playSfx(sfx.enemyHit);
+          }
+
+          // Force zoom to screen center
+          camFocalX = canvas.width / 2;
+          camFocalY = canvas.height / 2;
+
+      } else {
+          // NORMAL GAMEPLAY: Hard clamp bounds so the camera never sees outside the world map
+          camera.x = Math.max(0, Math.min(playerCamX, camera.worldWidth - canvas.width));
+          camera.y = Math.max(0, Math.min(playerCamY, camera.worldHeight - canvas.height));
+          
+          cameraZoom = 1.0;
+          camFocalX = (playerCamX + canvas.width / 2) - camera.x;
+          camFocalY = (playerCamY + canvas.height / 2) - camera.y;
+      }
+	  
 
             if (player.grounded && !wasGrounded) {
         playSfx(sfx.land);
@@ -8710,9 +9247,9 @@ function renderCaveBackground(targetCtx) {
         currentBgImage = bgImages.rocky;
     }
 
-    // Fallback dark cavern base color
+// Fallback dark cavern base color (expanded massively to hide the void during cutscenes)
     ctx.fillStyle = '#0d0a1a';
-    ctx.fillRect(0, -500, levelWidth, levelHeight + 500);
+    ctx.fillRect(-2000, -1000, levelWidth + 4000, levelHeight + 2000);
 
     // 1. Draw your PNG background with a subtle slow parallax offset
     if (currentBgImage.complete && currentBgImage.naturalWidth !== 0) {
@@ -9356,15 +9893,21 @@ function render() {
           ctx.shadowColor = '#ff3311';
           ctx.shadowBlur = 18;
           ctx.font = 'bold 30px "Press Start 2P"';
-          ctx.fillText("SYSTEM ONLINE! ESCAPE THE CAVERNS!", w / 2, hudY);
+          ctx.fillText("SYSTEM ONLINE! ESCAPE?", w / 2, hudY);
           ctx.shadowBlur = 0;
         }
         ctx.restore();
         return;
       }
 
-      if (gameState === 'PLAYING') {
+if (gameState === 'PLAYING') {
         ctx.save();
+        
+        // Apply our camera zoom centered exactly on our calculated focal point!
+        ctx.translate(camFocalX, camFocalY);
+        ctx.scale(cameraZoom, cameraZoom);
+        ctx.translate(-camFocalX, -camFocalY);
+
         const shakeX = screenShakeTimer > 0 ? (Math.random() - 0.5) * screenShakeMag * 2 : 0;
         const shakeY = screenShakeTimer > 0 ? (Math.random() - 0.5) * screenShakeMag * 2 : 0;
         ctx.translate(-Math.floor(camera.x - shakeX), -Math.floor(camera.y - shakeY));
@@ -10039,6 +10582,24 @@ damageNumbers.forEach(d => {
   ctx.restore();
 });
 
+// Draw huge blood splats (Optimized - No Shadows)
+bloodSplats.forEach(splatGroup => {
+  splatGroup.forEach(p => {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+    ctx.fillStyle = p.color;
+    
+    // Stretch the droplets dynamically based on their speed and direction
+    ctx.translate(p.x, p.y);
+    ctx.rotate(Math.atan2(p.vy, p.vx));
+    ctx.beginPath();
+    ctx.ellipse(0, 0, p.size * 1.4, p.size * 0.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  });
+});
+
 // Draw red hit sparks
 hitSparks.forEach(sparkGroup => {
 if (sparkGroup.shockwave && sparkGroup.shockwave.alpha > 0) {
@@ -10058,14 +10619,11 @@ if (sparkGroup.shockwave && sparkGroup.shockwave.alpha > 0) {
       ctx.restore();
     }
   }
-  sparkGroup.particles.forEach(p => {
+sparkGroup.particles.forEach(p => {
     ctx.save();
 
     ctx.globalAlpha = Math.max(0, p.life / 24);
-
     ctx.fillStyle = sparkGroup.color;
-	ctx.shadowColor = sparkGroup.color;
-    ctx.shadowBlur = 8;
 
     ctx.fillRect(
       p.x - p.size / 2,
@@ -10294,6 +10852,62 @@ if (player.dashActive) {
 
         ctx.restore();
 
+ctx.restore();
+
+// =====================================
+        // LEVEL INTRO "MISSION" TEXT
+        // =====================================
+        if (levelIntroActive) {
+            // Intense dark vignette over the whole screen to build claustrophobia
+            const introVignette = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.height*0.2, canvas.width/2, canvas.height/2, canvas.height*0.8);
+            introVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            introVignette.addColorStop(1, 'rgba(15, 0, 5, 0.95)'); // Bloody dark edges
+            ctx.fillStyle = introVignette;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const holdStart = 50;
+            const panToExit = 55;
+            const holdExit = 120;
+            const pExitEnd = holdStart + panToExit;
+            const pReturnStart = pExitEnd + holdExit;
+            
+            if (levelIntroTimer >= pExitEnd && levelIntroTimer < pReturnStart) {
+                const textTimer = levelIntroTimer - pExitEnd;
+                
+                let textAlpha = 1;
+                if (textTimer < 10) textAlpha = textTimer / 10; // Flash in very fast
+                if (textTimer > 100) textAlpha = (120 - textTimer) / 20; // Fade out fast
+                
+                ctx.save();
+                
+                // Violent text glitch/shake for the first half second
+                const jitterX = (textTimer < 25) ? (Math.random() - 0.5) * 8 : 0;
+                const jitterY = (textTimer < 25) ? (Math.random() - 0.5) * 8 : 0;
+                
+                ctx.translate(canvas.width / 2 + jitterX, canvas.height / 2 + jitterY);
+                
+                // Bloody shadow behind text
+                ctx.fillStyle = `rgba(255, 0, 0, ${textAlpha * 0.7})`;
+                ctx.font = 'bold 54px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText("MISSION: KILL THEM ALL", 5, 5);
+                
+                // Bright white primary text
+                ctx.fillStyle = `rgba(255, 255, 255, ${textAlpha})`;
+                ctx.shadowColor = `rgba(255, 0, 0, ${textAlpha})`;
+                ctx.shadowBlur = 30;
+                ctx.fillText("MISSION: KILL THEM ALL", 0, 0);
+                
+                ctx.restore();
+            }
+        }
+
+        // =====================================
+        // UI RENDERING (HIDDEN DURING INTRO)
+        // =====================================
+        if (!levelIntroActive) {
+        
         if (gameMode === 'speedrun' && !zamSecretActive) {
           ctx.fillStyle = '#d8d8d8';
           ctx.font = 'bold 22px "Press Start 2P"';
@@ -10407,6 +11021,272 @@ if (player.dashActive) {
             ctx.fillRect(cx + cellW - 4, cy + cellH - 4, 2, 2);
         }
         ctx.restore();
+		// ============================================================
+        // LORE COMM SYSTEM UI (^^&@z)
+        // ============================================================
+        if (loreMessageAnim > 0) {
+            ctx.save();
+            const notifW = 280;
+            const notifH = 64;
+            // Smooth easing for the slide-in animation
+            const animEased = 1 - Math.pow(1 - loreMessageAnim, 3);
+            const slideX = canvas.width - (notifW + 20) * animEased;
+            const notifY = barStartY + cellH + 15; // Placed perfectly under the health bar
+
+            // Sleek Dark-Cyber Box
+            ctx.fillStyle = 'rgba(8, 10, 15, 0.95)';
+            ctx.fillRect(slideX, notifY, notifW, notifH);
+            ctx.strokeStyle = '#ff0033';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(slideX, notifY, notifW, notifH);
+
+            // Red left accent line
+            ctx.fillStyle = '#ff0033';
+            ctx.fillRect(slideX, notifY, 6, notifH);
+
+            ctx.fillStyle = '#ff3355';
+            ctx.font = 'bold 12px "Press Start 2P"';
+            ctx.textAlign = 'left';
+            ctx.shadowColor = '#ff0033';
+            ctx.shadowBlur = 8;
+            ctx.fillText("MESSAGE RECEIVED", slideX + 20, notifY + 24);
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#a0aab5';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText(`[3] CHECK  |  [4] BLOCK`, slideX + 20, notifY + 46);
+            ctx.restore();
+        }
+
+if (loreMessageState === 2) {
+            ctx.save();
+            const phoneW = 560;
+            const phoneH = 540;
+            const phoneX = (canvas.width - phoneW) / 2;
+            const phoneY = (canvas.height - phoneH) / 2;
+            const pulse = 0.65 + Math.sin(player.animTimer * 0.12) * 0.35;
+
+            // Dark cyber vignette backdrop
+            ctx.fillStyle = 'rgba(2, 6, 14, 0.78)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Outer futuristic holographic frame
+            ctx.beginPath();
+            ctx.roundRect(phoneX - 4, phoneY - 4, phoneW + 8, phoneH + 8, 18);
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.45 + pulse * 0.25})`;
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 18;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Main chassis
+            ctx.beginPath();
+            ctx.roundRect(phoneX, phoneY, phoneW, phoneH, 16);
+            ctx.fillStyle = '#070b14';
+            ctx.fill();
+            ctx.strokeStyle = '#1e3a5f';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Clip inner screen
+            ctx.beginPath();
+            ctx.roundRect(phoneX + 6, phoneY + 6, phoneW - 12, phoneH - 12, 12);
+            ctx.fillStyle = '#040811';
+            ctx.fill();
+            ctx.clip();
+
+            // Subtle tech grid inside screen
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.045)';
+            ctx.lineWidth = 1;
+            for (let gx = phoneX + 6; gx < phoneX + phoneW; gx += 28) {
+                ctx.beginPath();
+                ctx.moveTo(gx, phoneY + 6);
+                ctx.lineTo(gx, phoneY + phoneH - 6);
+                ctx.stroke();
+            }
+            for (let gy = phoneY + 6; gy < phoneY + phoneH; gy += 28) {
+                ctx.beginPath();
+                ctx.moveTo(phoneX + 6, gy);
+                ctx.lineTo(phoneX + phoneW - 6, gy);
+                ctx.stroke();
+            }
+
+            // Top Header Bar
+            ctx.fillStyle = '#0b1324';
+            ctx.fillRect(phoneX + 6, phoneY + 6, phoneW - 12, 68);
+
+            // Cyan/Crimson corner brackets on avatar
+            ctx.fillStyle = '#ff003c';
+            ctx.shadowColor = '#ff003c';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(phoneX + 42, phoneY + 40, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(phoneX + 21, phoneY + 19, 42, 42);
+
+            ctx.fillStyle = '#040811';
+            ctx.font = 'bold 15px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText("!", phoneX + 42, phoneY + 46);
+
+            // Sender & Signal Readout
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#e2f8ff';
+            ctx.font = 'bold 12px "Press Start 2P"';
+            ctx.fillText(`${currentLoreSender}`, phoneX + 76, phoneY + 34);
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText("LINK: RELAY-09 [ENCRYPTED]", phoneX + 76, phoneY + 53);
+
+            // Signal bars on top-right
+            for (let b = 0; b < 4; b++) {
+                const bh = 6 + b * 4;
+                ctx.fillStyle = b < 3 ? '#00f0ff' : '#1e3a5f';
+                ctx.fillRect(phoneX + phoneW - 64 + b * 9, phoneY + 46 - bh, 5, bh);
+            }
+
+            // Header divider
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(phoneX + 6, phoneY + 74);
+            ctx.lineTo(phoneX + phoneW - 6, phoneY + 74);
+            ctx.stroke();
+
+           // Scrolling Chat Area
+            let totalContentHeight = 20; // top padding
+            for (let m = 0; m < loreConversation.length; m++) {
+                if (loreConversation[m].sender === 'hacker') {
+                    totalContentHeight += loreConversation[m].text.split('\n').length * 24 + 18 + 16;
+                } else {
+                    totalContentHeight += 36 + 24;
+                }
+            }
+
+            const chatViewTop = phoneY + 76;
+            const chatViewHeight = phoneH - 168;
+            const maxScroll = Math.max(0, totalContentHeight - chatViewHeight + 24);
+
+            if (loreScrollOffset > maxScroll) loreScrollOffset = maxScroll;
+            if (loreScrollOffset < 0) loreScrollOffset = 0;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(phoneX + 6, chatViewTop, phoneW - 12, chatViewHeight);
+            ctx.clip();
+
+            ctx.textBaseline = 'top';
+            let textCursorY = phoneY + 90 - loreScrollOffset;
+            const bubbleMaxW = phoneW - 96;
+
+            for (let m = 0; m < loreConversation.length; m++) {
+                const msg = loreConversation[m];
+                
+                if (msg.sender === 'hacker') {
+                    const lines = msg.text.split('\n');
+                    const bubbleH = lines.length * 24 + 18;
+
+                    // Incoming Hacker Bubble (Left)
+                    ctx.fillStyle = 'rgba(28, 8, 18, 0.92)';
+                    ctx.beginPath();
+                    ctx.roundRect(phoneX + 20, textCursorY, bubbleMaxW, bubbleH, 8);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ff004c';
+                    ctx.lineWidth = 1.8;
+                    ctx.stroke();
+
+                    // Left accent bar (inset slightly so it doesn't poke out of rounded corners)
+                    ctx.fillStyle = '#ff004c';
+                    ctx.fillRect(phoneX + 20, textCursorY + 4, 4, bubbleH - 8);
+
+                    ctx.fillStyle = '#ff889e';
+                    ctx.font = '10px "Press Start 2P"';
+                    let lineY = textCursorY + 12; // Precise top padding
+                    for (let i = 0; i < lines.length; i++) {
+                        ctx.fillText(lines[i], phoneX + 36, lineY);
+                        lineY += 24;
+                    }
+                    textCursorY += bubbleH + 16; // Advance cursor past bubble + gap
+                } else {
+                    // Outgoing Sent Bubbles (Right)
+                    ctx.font = '10px "Press Start 2P"';
+                    const msgText = msg.text;
+                    const msgWidth = ctx.measureText(msgText).width;
+                    const bubbleW = Math.min(bubbleMaxW, Math.max(msgWidth + 28, 90));
+                    const bubbleX = phoneX + phoneW - bubbleW - 20;
+                    const bubbleH = 36;
+
+                    ctx.fillStyle = 'rgba(8, 24, 44, 0.92)';
+                    ctx.beginPath();
+                    ctx.roundRect(bubbleX, textCursorY, bubbleW, bubbleH, 8);
+                    ctx.fill();
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#9cf6ff';
+                    ctx.fillText(msgText, bubbleX + 14, textCursorY + 13); // Vertically centered
+
+                    ctx.fillStyle = '#ff3355';
+                    ctx.font = '8px "Press Start 2P"';
+                    ctx.textAlign = 'right';
+                    ctx.fillText("TRANSMISSION REJECTED", phoneX + phoneW - 22, textCursorY + bubbleH + 6);
+                    ctx.textAlign = 'left';
+
+                    textCursorY += bubbleH + 24; // Advance cursor past subtext + gap
+                }
+            }
+            ctx.textBaseline = 'alphabetic'; // Reset to prevent affecting HUD/other elements
+            ctx.restore();
+
+            // Footer Input Bar
+            const inputY = phoneY + phoneH - 84;
+            ctx.fillStyle = '#0b1324';
+            ctx.fillRect(phoneX + 6, inputY - 8, phoneW - 12, 86);
+
+            ctx.strokeStyle = '#1e3a5f';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(phoneX + 6, inputY - 8);
+            ctx.lineTo(phoneX + phoneW - 6, inputY - 8);
+            ctx.stroke();
+
+            // Input Box
+            ctx.fillStyle = '#050b18';
+            ctx.beginPath();
+            ctx.roundRect(phoneX + 20, inputY, phoneW - 40, 38, 6);
+            ctx.fill();
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = '10px "Press Start 2P"';
+            let displayInput = loreInputText;
+            if (ctx.measureText(displayInput).width > phoneW - 90) {
+                displayInput = "..." + displayInput.substring(displayInput.length - 28);
+            }
+            ctx.fillText(`> ${displayInput}`, phoneX + 32, inputY + 24);
+
+            if (Math.floor(player.animTimer / 15) % 2 === 0) {
+                const textW = ctx.measureText(`> ${displayInput}`).width;
+                ctx.fillStyle = '#00f0ff';
+                ctx.fillRect(phoneX + 34 + textW, inputY + 13, 7, 13);
+            }
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText("[3] CLOSE   |   [4] BLOCK   |   [↑↓] SCROLL   |   [ENTER] TRANSMIT", phoneX + phoneW / 2, inputY + 58);
+
+            ctx.restore();
+        }
 		
 		if (isDefenseMode && defenseCore) {
           ctx.save();
@@ -10623,13 +11503,16 @@ for (let l = 0; l < lines.length; l++) {
           ctx.font = '20px "Press Start 2P"';
           ctx.fillText(npcDialogueText.substring(0, npcDialogueRevealCount), boxX + 24, boxY + 62);
 
-          if (npcAwaitingChoice && npcDialogueRevealCount >= npcDialogueText.length) {
+if (npcAwaitingChoice && npcDialogueRevealCount >= npcDialogueText.length) {
             ctx.fillStyle = '#ffcc33';
             ctx.font = 'bold 16px "Press Start 2P"';
             ctx.fillText("[Y] YES     [N] NO", boxX + 24, boxY + 82);
           }
         }
+        
+        } // <--- This closes the `if (!levelIntroActive)` block!
       }
+      // Cinematic Boss Intro Banner (Aggressive Shake & Fast Fade)
 	  // Cinematic Boss Intro Banner (Aggressive Shake & Fast Fade)
         if (bossBannerTimer > 0) {
             bossBannerTimer--;
