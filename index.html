@@ -6244,16 +6244,19 @@ function drawEnemies(e) {
     ctx.arc(0, 0, maxRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Pulsing expanding wave ring
-    ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.5})`;
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 8;
+// Pulsing expanding wave ring
     ctx.beginPath();
     ctx.arc(0, 0, currentR, 0, Math.PI * 2);
+
+    // Thick transparent stroke for the glow
+    ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.15})`;
+    ctx.lineWidth = 8;
     ctx.stroke();
 
-    ctx.shadowBlur = 0;
+    // Crisp inner stroke
+    ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.5})`;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
     ctx.restore();
   }
   // Note: When state === 'tracking', no outer circle is drawn—the drone's glowing red eye says it all!
@@ -7298,13 +7301,14 @@ function drawEnemies(e) {
           grad.addColorStop(0, 'rgba(255,40,40,0)');
           grad.addColorStop(0.5, 'rgba(255,60,60,0.95)');
           grad.addColorStop(1, 'rgba(255,40,40,0)');
+// Wide, transparent box fakes the massive glow aura
+          ctx.fillStyle = 'rgba(255, 32, 32, 0.15)'; 
+          ctx.fillRect(lx - laserHalfWidth - 15, 0, (laserHalfWidth * 2) + 30, floorY);
+          
           ctx.fillStyle = grad;
-          ctx.shadowColor = '#ff2020';
-          ctx.shadowBlur = 25;
           ctx.fillRect(lx - laserHalfWidth, 0, laserHalfWidth * 2, floorY);
           ctx.fillStyle = 'rgba(255,255,255,0.85)';
           ctx.fillRect(lx - 4, 0, 8, floorY);
-          ctx.shadowBlur = 0;
           ctx.restore();
         });
       }
@@ -7335,13 +7339,14 @@ function drawEnemies(e) {
       } else if (b.state === 'sidelaser_active') {
         ctx.save();
         const flicker = 0.75 + Math.sin(player.animTimer * 0.9) * 0.25;
+// Wide, transparent box fakes the aura
+        ctx.fillStyle = `rgba(255, 32, 32, ${flicker * 0.25})`; 
+        ctx.fillRect(worldLeft, topY - 15, worldRight - worldLeft, (bottomY - topY) + 30);
+        
         ctx.fillStyle = `rgba(255, 40, 40, ${flicker})`;
-        ctx.shadowColor = '#ff2020';
-        ctx.shadowBlur = 20;
         ctx.fillRect(worldLeft, topY, worldRight - worldLeft, bottomY - topY);
         ctx.fillStyle = `rgba(255,255,255,${flicker})`;
         ctx.fillRect(worldLeft, topY + (bottomY - topY) / 2 - 4, worldRight - worldLeft, 6);
-        ctx.shadowBlur = 0;
         ctx.restore();
       }
     }
@@ -10053,14 +10058,18 @@ function drawPlatform(plat) {
       ctx.fillStyle = col;
       ctx.fillRect(wave.x - width / 2, wave.y - len, width, len);
       
-      // 2. Bright, glowing outer border to clearly define the exact rectangular hitbox
-      ctx.globalAlpha = 1.0;
-      ctx.shadowColor = col;
-      ctx.shadowBlur = 15;
+// 2. Bright, glowing outer border to clearly define the exact rectangular hitbox
       ctx.strokeStyle = col;
+      
+      // Fake glow outer stroke
+      ctx.globalAlpha = 0.2;
+      ctx.lineWidth = 14;
+      ctx.strokeRect(wave.x - width / 2, wave.y - len, width, len);
+      
+      // Solid inner stroke
+      ctx.globalAlpha = 1.0;
       ctx.lineWidth = 3;
       ctx.strokeRect(wave.x - width / 2, wave.y - len, width, len);
-      ctx.shadowBlur = 0;
       
       // 3. Thin white inner outline and a small center streak for the energy effect
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
@@ -10803,14 +10812,17 @@ e.shootTimer--;
           ctx.strokeStyle = '#334155'; ctx.lineWidth = 4;
           ctx.strokeRect(defenseCore.x, defenseCore.y, defenseCore.w, defenseCore.h);
 
-          const coreColor = defenseCore.hp > 35 ? '#00f0ff' : '#ff3311';
+const coreColor = defenseCore.hp > 35 ? '#00f0ff' : '#ff3311';
           const corePulse = 22 + Math.sin(player.animTimer * 0.12) * 4;
+          
+          // Fake massive glow radius
+          ctx.fillStyle = defenseCore.hp > 35 ? 'rgba(0, 240, 255, 0.2)' : 'rgba(255, 51, 17, 0.2)';
+          ctx.beginPath(); ctx.arc(cx, cy, corePulse + 18, 0, Math.PI * 2); ctx.fill();
+
           ctx.fillStyle = coreColor;
-          ctx.shadowColor = coreColor; ctx.shadowBlur = 22;
           ctx.beginPath(); ctx.arc(cx, cy, corePulse, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#ffffff';
           ctx.beginPath(); ctx.arc(cx, cy, corePulse * 0.45, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
 
 const currentPcx = player.x + player.width / 2;
 const coreBottomY = 680; // Floor level
@@ -10839,12 +10851,15 @@ if (!window.coreGameStarted && Math.abs(currentPcx - cx) < 90 && Math.abs((playe
             ctx.strokeStyle = '#00ff66'; ctx.lineWidth = 3;
             ctx.strokeRect(hs.x, hs.y, hs.w, hs.h);
 
-            // Glowing green medical cross
+// Fake medical cross glow
+            ctx.fillStyle = 'rgba(0, 255, 102, 0.2)';
+            ctx.fillRect(hx - 8, hs.y + 4, 16, 32);
+            ctx.fillRect(hx - 16, hs.y + 12, 32, 16);
+            
+            // Solid green cross
             ctx.fillStyle = '#00ff66';
-            ctx.shadowColor = '#00ff66'; ctx.shadowBlur = 12;
             ctx.fillRect(hx - 4, hs.y + 8, 8, 24);
             ctx.fillRect(hx - 12, hs.y + 16, 24, 8);
-            ctx.shadowBlur = 0;
 
             const currentPcx = player.x + player.width / 2;
             if (Math.abs(currentPcx - hx) < 48 && Math.abs((player.y + player.height) - hs.y) < 45) {
@@ -10880,13 +10895,15 @@ if (!window.coreGameStarted && Math.abs(currentPcx - cx) < 90 && Math.abs((playe
             ctx.restore();
           });
 
-          // Scrap Drops
+// Scrap Drops
           defenseDrops.forEach(d => {
-            ctx.save();
+            // Fake glow box
+            ctx.fillStyle = 'rgba(255, 204, 51, 0.25)';
+            ctx.fillRect(d.x - 10, d.y - 10, 20, 20);
+            
+            // Solid center
             ctx.fillStyle = '#ffcc33';
-            ctx.shadowColor = '#ffcc33'; ctx.shadowBlur = 8;
             ctx.fillRect(d.x - 6, d.y - 6, 12, 12);
-            ctx.restore();
           });
         
         if (defenseState === 'victory') {
@@ -10906,19 +10923,23 @@ if (!window.coreGameStarted && Math.abs(currentPcx - cx) < 90 && Math.abs((playe
 
         enemies.forEach(e => drawEnemies(e));
 		if (window.sniperBeams) {
-          for (let i = window.sniperBeams.length - 1; i >= 0; i--) {
+for (let i = window.sniperBeams.length - 1; i >= 0; i--) {
             const beam = window.sniperBeams[i];
             beam.life--;
-            ctx.save();
-            ctx.strokeStyle = '#ff0055';
-            ctx.shadowColor = '#ff0055';
-            ctx.shadowBlur = 15;
-            ctx.lineWidth = 4;
+            
+            // Thick transparent stroke fakes the laser aura
+            ctx.strokeStyle = 'rgba(255, 0, 85, 0.25)';
+            ctx.lineWidth = 14;
             ctx.beginPath();
             ctx.moveTo(beam.x1, beam.y1);
             ctx.lineTo(beam.x2, beam.y2);
             ctx.stroke();
-            ctx.restore();
+
+            // Solid inner core
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
             if (beam.life <= 0) window.sniperBeams.splice(i, 1);
           }
         }
@@ -11051,11 +11072,13 @@ sparkGroup.particles.forEach(p => {
             ctx.closePath();
             ctx.fill();
 
-            ctx.shadowColor = '#00f0ff';
-            ctx.shadowBlur = 10;
+// Transparent outer box fakes the glow
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+            ctx.fillRect(-b.radius * 0.6 - 4, -b.radius * 0.35 - 4, b.radius * 1.9 + 8, b.radius * 0.7 + 8);
+            
+            // Solid center
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(-b.radius * 0.6, -b.radius * 0.35, b.radius * 1.9, b.radius * 0.7);
-            ctx.shadowBlur = 0;
                     } else {
             // --- TIERED CHARGED SHOTS: Distinct visuals for Damage 3, 5, and 10 ---
             const isMaxPower = bRatio >= 0.95;
@@ -11116,15 +11139,22 @@ sparkGroup.particles.forEach(p => {
             else if (isMidPower) finColor = '#ff8800';
             else finColor = '#9d4edd';
 
-            ctx.fillStyle = finColor;
-            ctx.shadowColor = finColor;
-            ctx.shadowBlur = 22 * visScale;
-            ctx.beginPath();
+ctx.beginPath();
             ctx.moveTo(r * 2.1, 0);
             ctx.lineTo(-r * 0.9, -r * 1.65);
             ctx.lineTo(-r * 0.2, 0);
             ctx.lineTo(-r * 0.9, r * 1.65);
             ctx.closePath();
+
+            // Fake outer glow using a thick, highly transparent stroke
+            ctx.strokeStyle = finColor;
+            ctx.globalAlpha = 0.25;
+            ctx.lineWidth = 14 * visScale;
+            ctx.stroke();
+
+            // Solid inner core
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = finColor;
             ctx.fill();
 
             // White-hot diamond spearhead core
@@ -11676,11 +11706,11 @@ if (loreMessageState === 2) {
           ctx.textAlign = 'left';
           ctx.fillText(`WAVE ${defenseWave}/${defenseMaxWaves}`, barX + 6, barY + 10);
 
-          // Yellow Square Icon + Scrap Count
+// Yellow Square Icon + Scrap Count
+          ctx.fillStyle = 'rgba(255, 204, 51, 0.25)';
+          ctx.fillRect(barX + barW - 169, barY - 8, 22, 22);
           ctx.fillStyle = '#ffcc33';
-          ctx.shadowColor = '#ffcc33'; ctx.shadowBlur = 8;
           ctx.fillRect(barX + barW - 165, barY - 4, 14, 14);
-          ctx.shadowBlur = 0;
           ctx.textAlign = 'right';
           ctx.fillText(`SCRAP: ${defenseScrap}`, barX + barW - 6, barY + 10);
 		  
